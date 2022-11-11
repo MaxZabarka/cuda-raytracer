@@ -10,7 +10,9 @@ public:
 
     __device__ __host__ Vec3 operator-(const Vec3 &other) const;
     __device__ __host__ Vec3 operator+(const Vec3 &other) const;
+    __device__ __host__ Vec3 operator*(const Vec3 &other) const;
     __device__ __host__ Vec3 operator*(float scalar) const;
+    
     __device__ __host__ Vec3 operator+(float addend) const;
     __device__ __host__ Vec3 operator-() const;
 
@@ -20,6 +22,7 @@ public:
     __device__ __host__ Vec3 normalize() const;
 
     __device__ __host__ Color to_int_color() const;
+    __device__ __host__ Vec3 square_root() const;
 
     float x;
     float y;

@@ -15,7 +15,7 @@ Window::Window(int image_width, int image_height, int window_width, int window_h
 {
     if (window_width == 0 || window_height == 0)
     {
-        window_width = 512;
+        window_width = 750;
         window_height = window_width * image_height / image_width;
     }
     SDL_Init(SDL_INIT_VIDEO);
@@ -50,17 +50,20 @@ void Window::draw_test()
                                             image_width, image_height);
 
     // Create scene
-    Camera camera{image_width, image_height, Point(0.0f, 0, -10.0f)};
+    Camera camera{image_width, image_height, Point(0.0f, 0.0f, -1.0f)};
     Scene *scene = (Scene *)cuda::mallocManaged(sizeof(Scene));
 
-    scene->sphere_count = 4;
+    scene->sphere_count = 2;
     scene->camera = camera;
     scene->spheres = (Sphere *)cuda::mallocManaged(sizeof(Sphere) * scene->sphere_count);
 
-    scene->spheres[0] = Sphere{Point{2.2F, 0.0F, 0.0F}, 1, Material{FloatColor{1.0f, 0.0f, 0.0f}}};  // red
-    scene->spheres[1] = Sphere{Point{0.0F, 0.0F, 0.0F}, 1, Material{FloatColor{0.0f, 1.0f, 0.0f}}};  // green
-    scene->spheres[2] = Sphere{Point{-2.2F, 0.0F, 0.0F}, 1, Material{FloatColor{0.0f, 0.0f, 1.0f}}}; // blue
-    scene->spheres[3] = Sphere{Point{0, -100.5, 0}, 100, Material{FloatColor{0.5f, 0.5f, 0.5f}}};    // ground
+    scene->spheres[0] = Sphere{Point{0.0F, 0.0F, 0.0F}, 0.5, Material{FloatColor{1.0f, 0.0f, 0.0f}}};  // red
+    scene->spheres[1] = Sphere{Point{0.0F, -100.5F, 0.0F}, 100, Material{FloatColor{0.0f, 1.0f, 0.0f}}};  // green
+
+    // scene->spheres[0] = Sphere{Point{2.2F, 0.0F, 0.0F}, 1, Material{FloatColor{1.0f, 0.0f, 0.0f}}};  // red
+    // scene->spheres[1] = Sphere{Point{0.0F, 0.0F, 0.0F}, 1, Material{FloatColor{0.0f, 1.0f, 0.0f}}};  // green
+    // scene->spheres[2] = Sphere{Point{-2.2F, 0.0F, 0.0F}, 1, Material{FloatColor{0.0f, 0.0f, 1.0f}}}; // blue
+    // scene->spheres[3] = Sphere{Point{0, -101, 0}, 100, Material{FloatColor{0.5f, 0.5f, 0.5f}}};    // ground
 
     clock_t lastTick = clock();
     clock_t dt = 0;
@@ -74,6 +77,7 @@ void Window::draw_test()
 
     while (!quit)
     {
+        printf("Sample: %d\n", current_sample);
         clock_t now = clock();
         dt = (now - lastTick);
         lastTick = now;

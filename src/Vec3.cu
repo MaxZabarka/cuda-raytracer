@@ -20,6 +20,10 @@ __device__ __host__ Vec3 Vec3::operator+(const Vec3 &other) const
 {
     return Vec3(x + other.x, y + other.y, z + other.z);
 }
+__device__ __host__ Vec3 Vec3::operator*(const Vec3 &other) const
+{
+    return Vec3(x * other.x, y * other.y, z * other.z);
+}
 __device__ __host__ Vec3 Vec3::operator*(float scalar) const
 {
     return Vec3(x * scalar, y * scalar, z * scalar);
@@ -46,6 +50,12 @@ __device__ __host__ Vec3 Vec3::normalize() const
     float mag = magnitude();
     return Vec3(x / mag, y / mag, z / mag);
 }
-__device__ __host__ Color Vec3::to_int_color() const {
+__device__ __host__ Color Vec3::to_int_color() const
+{
     return Color{(uint8_t)(255.99 * x), (uint8_t)(255.99 * y), (uint8_t)(255.99 * z)};
+}
+
+__device__ __host__ Vec3 Vec3::square_root() const
+{
+    return Vec3(sqrt(x), sqrt(y), sqrt(z));
 }
