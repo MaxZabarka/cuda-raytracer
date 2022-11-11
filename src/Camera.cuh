@@ -9,17 +9,17 @@ public:
         int image_width,
         int image_height,
         Point position = Point(),
-        Color background = Color{110, 209, 255},
+        FloatColor background = FloatColor(0.43f, 0.81f, 1.0f),
         float fov = 75,
         float far = INFINITY);
     __device__ __host__ ~Camera();
 
-    __device__ __host__ Point to_viewport(int x, int y);
+    __device__ __host__ Point to_viewport(float x, float y);
 
 public:
     int image_width;
     int image_height;
-    Color background;
+    FloatColor background;
     Point position;
     float far;
     float fov;

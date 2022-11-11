@@ -1,7 +1,7 @@
 #pragma once
-#include "Color.cuh"
+#include "Vec3.cuh"
 
 struct Material
 {
-    Color color;
+    FloatColor color;
 };

@@ -1,4 +1,5 @@
 #pragma once
+#include "Color.cuh"
 
 class Vec3
 {
@@ -9,12 +10,22 @@ public:
 
     __device__ __host__ Vec3 operator-(const Vec3 &other) const;
     __device__ __host__ Vec3 operator+(const Vec3 &other) const;
+    __device__ __host__ Vec3 operator*(float scalar) const;
+    __device__ __host__ Vec3 operator+(float addend) const;
+    __device__ __host__ Vec3 operator-() const;
+
     __device__ __host__ float dot(const Vec3 &other) const;
+    __device__ __host__ float magnitude() const;
+    __device__ __host__ float magnitude_squared() const;
+    __device__ __host__ Vec3 normalize() const;
+
+    __device__ __host__ Color to_int_color() const;
 
     float x;
     float y;
     float z;
 };
 
+using FloatColor = Vec3;
 using Point = Vec3;
 using Direction = Vec3;

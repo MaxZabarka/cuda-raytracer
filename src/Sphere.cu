@@ -3,11 +3,11 @@
 #include "Infinity.cuh"
 #include <cmath>
 #include <iostream>
-Sphere::Sphere(Point position, float radius, Material material) : position{position}, radius{radius}, material{material}
+__device__ __host__ Sphere::Sphere(Point position, float radius, Material material) : position{position}, radius{radius}, material{material}
 {
 }
 
-Sphere::~Sphere()
+__device__ __host__ Sphere::~Sphere()
 {
 }
 
@@ -15,9 +15,9 @@ Sphere::~Sphere()
 //     return 0;
 // }
 
-__device__ __host__ Hit Sphere::hit(const Ray &ray)
+__device__ __host__ Hit Sphere::hit(Ray &ray)
 {
-    Hit hit{INFINITY, this};
+    Hit hit{INFINITY, Vec3{}, this};
 
     // CO = O - C
     Vec3 sphere_direction = ray.origin - position;
@@ -37,6 +37,7 @@ __device__ __host__ Hit Sphere::hit(const Ray &ray)
     if (discriminant >= 0)
     {
         hit.t = (-b - sqrt(discriminant)) / (2 * a);
+        hit.p = ray.origin + (ray.direction * hit.t);
     }
 
     return hit;
