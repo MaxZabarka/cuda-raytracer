@@ -19,10 +19,10 @@ Camera::Camera(
 
 
 {
-    viewport_height = 1;
+    viewport_height = 2;
     viewport_width = viewport_height * (float)image_width / (float)image_height;
     // viewport_distance = 1 / tan(((fov / 2) * 2.14) / 180.0) / 2;
-    viewport_distance = 0.5;
+    viewport_distance = 1;
 }
 __device__ __host__ Point Camera::to_viewport(float x, float y)
 {

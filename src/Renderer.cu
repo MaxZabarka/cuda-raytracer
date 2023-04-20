@@ -11,7 +11,7 @@
 #include "Vec3.cuh"
 #include <curand_kernel.h>
 
-#define COLOR_NORMALS false
+#define COLOR_NORMALS true
 
 Renderer::Renderer()
 {
@@ -36,6 +36,11 @@ __device__ Point random_in_unit_sphere(curandState *local_rand_state)
         return point;
     }
 }
+
+__device__ Direction random_unit_vector(curandState *local_rand_state)
+{
+    return random_in_unit_sphere(local_rand_state).normalize();
+}
 __device__ Point random_in_hemisphere(const Direction &normal, curandState *local_rand_state)
 {
     Point in_unit_sphere = random_in_unit_sphere(local_rand_state);
@@ -52,9 +57,9 @@ __device__ Point random_in_hemisphere(const Direction &normal, curandState *loca
 __device__ FloatColor trace_ray(Ray &ray, Camera &camera, Scene *scene, curandState local_rand_state)
 {
     Ray current_ray = Ray{ray.direction, ray.origin};
-    float current_attenuation = 1.0f;
+    FloatColor current_attenuation = FloatColor{1.0f, 1.0f, 1.0f};
 
-    for (int _ = 0; _ < 1000; _++)
+    for (int _ = 0; _ < 50; _++)
     {
         Hit closest_hit = Hit{INFINITY, Vec3(0, 0, 0), nullptr};
 
@@ -73,25 +78,34 @@ __device__ FloatColor trace_ray(Ray &ray, Camera &camera, Scene *scene, curandSt
         if (closest_hit.hittable)
         {
             Sphere sphere = *((Sphere *)closest_hit.hittable);
-            Direction normal = (current_ray.origin + (current_ray.direction * closest_hit.t)) - sphere.position;
+            // Direction normal = sphere.position - closest_hit.p;
+            Direction normal = closest_hit.p - sphere.position;
+            // normal.x = -normal.x;
+            // normal.y = -normal.y;
+            // normal.z = -normal.z;
+
             normal = normal.normalize();
             if (COLOR_NORMALS)
             {
-                normal = (normal + 1) * 0.5;
-                normal = -normal + 1;
-                return FloatColor{normal.x, normal.y, normal.z};
+                return FloatColor{normal.x + 1, normal.y + 1, normal.z + 1} * 0.5;
+                // normal = (normal + 1) * 0.5;
+                // normal = -normal + 1;
+                // return FloatColor{normal.x, normal.y, normal.z};
             }
 
-            current_attenuation = current_attenuation * 0.5f;
+            current_attenuation = current_attenuation * sphere.get_material().color;
             current_ray.direction = closest_hit.p + normal + random_in_unit_sphere(&local_rand_state);
             // current_ray.direction = closest_hit.p + normal + random_in_hemisphere(normal, &local_rand_state);
+            // current_ray.direction = closest_hit.p + normal + random_unit_vector(&local_rand_state);
+
             current_ray.origin = closest_hit.p;
         }
         else
         {
             Direction ray_unit_direction = current_ray.direction.normalize();
             float y = 0.5 * (ray_unit_direction.y + 1.0);
-            FloatColor background_color =  FloatColor(1.0, 1.0, 1.0) * (1.0 - y) + FloatColor(0.5, 0.7, 1.0) * y;
+            FloatColor background_color = FloatColor(1.0, 1.0, 1.0) * (1.0 - y) + FloatColor(0.5, 0.7, 1.0) * y;
+            // FloatColor background_color = FloatColor(1, 1, 1);
             return background_color * current_attenuation;
 
             // return FloatColor(1.0, 1.0, 1.0) * (1.0f - darkness) + (FloatColor(0.5, .7, 1.0) * (darkness));
@@ -100,7 +114,7 @@ __device__ FloatColor trace_ray(Ray &ray, Camera &camera, Scene *scene, curandSt
     }
 
     // max bounces reached
-    return FloatColor{0, 0, 0};
+    return FloatColor{1, 0, 0};
 }
 
 __global__ void gpuRender(uint32_t *sampled_pixels, int pixel_count, size_t image_width, size_t image_height, Scene *scene, curandState *rand_state, int seed)
@@ -111,7 +125,7 @@ __global__ void gpuRender(uint32_t *sampled_pixels, int pixel_count, size_t imag
     if (x >= image_width || y >= image_height)
         return;
 
-    int index = ((image_height - y - 1) * image_width + x) * 3;
+    int index = ((image_height - y - 1) * image_width + (x)) * 3;
 
     curand_init(seed, index, 0, &rand_state[index / 3]);
     curandState local_rand_state = rand_state[index / 3];

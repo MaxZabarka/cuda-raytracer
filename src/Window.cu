@@ -50,20 +50,21 @@ void Window::draw_test()
                                             image_width, image_height);
 
     // Create scene
-    Camera camera{image_width, image_height, Point(0.0f, 0.0f, -1.0f)};
+    Camera camera{image_width, image_height, Point(0.0f, 0.0f, 0.0f)};
     Scene *scene = (Scene *)cuda::mallocManaged(sizeof(Scene));
 
-    scene->sphere_count = 2;
+    scene->sphere_count = 4;
+
     scene->camera = camera;
     scene->spheres = (Sphere *)cuda::mallocManaged(sizeof(Sphere) * scene->sphere_count);
 
-    scene->spheres[0] = Sphere{Point{0.0F, 0.0F, 0.0F}, 0.5, Material{FloatColor{1.0f, 0.0f, 0.0f}}};  // red
-    scene->spheres[1] = Sphere{Point{0.0F, -100.5F, 0.0F}, 100, Material{FloatColor{0.0f, 1.0f, 0.0f}}};  // green
+    // scene->spheres[0] = Sphere{Point{0.0F, 0.0F, 1.0F}, 0.5, Material{FloatColor{1.0f, 0.0f, 0.0f}}};  // red
+    // scene->spheres[1] = Sphere{Point{0.0F, -100.5F, 1.0F}, 100, Material{FloatColor{0.0f, 1.0f, 0.0f}}};  // green
 
-    // scene->spheres[0] = Sphere{Point{2.2F, 0.0F, 0.0F}, 1, Material{FloatColor{1.0f, 0.0f, 0.0f}}};  // red
-    // scene->spheres[1] = Sphere{Point{0.0F, 0.0F, 0.0F}, 1, Material{FloatColor{0.0f, 1.0f, 0.0f}}};  // green
-    // scene->spheres[2] = Sphere{Point{-2.2F, 0.0F, 0.0F}, 1, Material{FloatColor{0.0f, 0.0f, 1.0f}}}; // blue
-    // scene->spheres[3] = Sphere{Point{0, -101, 0}, 100, Material{FloatColor{0.5f, 0.5f, 0.5f}}};    // ground
+    // scene->spheres[0] = Sphere{Point{1.1F, 0.0F, 1.0F}, 0.5, Material{FloatColor{0.5f, 0.0f, 0.0f}}};  // red
+    scene->spheres[1] = Sphere{Point{0.0F, 0.0F, 1.0F}, 0.5, Material{FloatColor{0.5f, 0.5f, 0.5f}}};  // green
+    // scene->spheres[2] = Sphere{Point{-1.1F, 0.0F, 1.0F}, 0.5, Material{FloatColor{0.0f, 0.0f, 0.5f}}}; // blue
+    scene->spheres[3] = Sphere{Point{0, -100.5f, 0}, 100, Material{FloatColor{0.5f, 0.5f, 0.5f}}};    // ground
 
     clock_t lastTick = clock();
     clock_t dt = 0;
@@ -74,6 +75,9 @@ void Window::draw_test()
 
     bool quit = false;
     uint32_t current_sample = 0;
+    uint32_t max_samples = 10;
+    
+
 
     while (!quit)
     {
@@ -134,6 +138,11 @@ void Window::draw_test()
         {
             scene->camera.position.y += move_speed;
             rerender = true;
+        }
+
+        if (max_samples <= current_sample)
+        {
+            continue;
         }
 
         SDL_LockTexture(buffer,

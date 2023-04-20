@@ -43,7 +43,7 @@ __device__ __host__ float Vec3::magnitude() const
 }
 __device__ __host__ float Vec3::magnitude_squared() const
 {
-    return dot(*this);
+    return x*x + y*y + z*z;
 }
 __device__ __host__ Vec3 Vec3::normalize() const
 {
