@@ -75,7 +75,7 @@ void Window::draw_test()
 
     bool quit = false;
     uint32_t current_sample = 0;
-    uint32_t max_samples = 10;
+    uint32_t max_samples = 100;
     
 
 

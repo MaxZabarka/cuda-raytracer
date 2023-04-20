@@ -11,7 +11,7 @@
 #include "Vec3.cuh"
 #include <curand_kernel.h>
 
-#define COLOR_NORMALS true
+#define COLOR_NORMALS false
 
 Renderer::Renderer()
 {
@@ -68,8 +68,8 @@ __device__ FloatColor trace_ray(Ray &ray, Camera &camera, Scene *scene, curandSt
             Hit hit;
             Sphere *sphere = (scene->spheres + i);
             hit = sphere->hit(current_ray);
-
-            if (hit.t > 0.001 && hit.t < camera.far && hit.t < closest_hit.t)
+            //                                                         Fix shadow acne
+            if (hit.t < closest_hit.t && hit.t < camera.far && hit.t > 0.001)
             {
                 closest_hit = hit;
             }
@@ -78,27 +78,31 @@ __device__ FloatColor trace_ray(Ray &ray, Camera &camera, Scene *scene, curandSt
         if (closest_hit.hittable)
         {
             Sphere sphere = *((Sphere *)closest_hit.hittable);
-            // Direction normal = sphere.position - closest_hit.p;
-            Direction normal = closest_hit.p - sphere.position;
+            // Direction normal = (sphere.position - closest_hit.p).normalize();
+            Direction normal = (closest_hit.p - sphere.position).normalize();
+
+            // normal = normal.normalize();
+
             // normal.x = -normal.x;
             // normal.y = -normal.y;
-            // normal.z = -normal.z;
+            normal.z = -normal.z;
 
-            normal = normal.normalize();
             if (COLOR_NORMALS)
             {
                 return FloatColor{normal.x + 1, normal.y + 1, normal.z + 1} * 0.5;
+                // return FloatColor{normal.x + 1, normal.y + 1, normal.z + 1} * 0.5;
                 // normal = (normal + 1) * 0.5;
                 // normal = -normal + 1;
                 // return FloatColor{normal.x, normal.y, normal.z};
             }
+            current_attenuation = sphere.get_material().color * current_attenuation;
 
-            current_attenuation = current_attenuation * sphere.get_material().color;
-            current_ray.direction = closest_hit.p + normal + random_in_unit_sphere(&local_rand_state);
-            // current_ray.direction = closest_hit.p + normal + random_in_hemisphere(normal, &local_rand_state);
-            // current_ray.direction = closest_hit.p + normal + random_unit_vector(&local_rand_state);
+            // Point target = closest_hit.p + normal + random_in_unit_sphere(&local_rand_state);
+            // Point target = closest_hit.p + normal + random_unit_vector(&local_rand_state);
+            Point target = closest_hit.p + random_in_hemisphere(normal, &local_rand_state);
 
             current_ray.origin = closest_hit.p;
+            current_ray.direction = target - closest_hit.p;
         }
         else
         {
@@ -114,7 +118,7 @@ __device__ FloatColor trace_ray(Ray &ray, Camera &camera, Scene *scene, curandSt
     }
 
     // max bounces reached
-    return FloatColor{1, 0, 0};
+    return FloatColor{0, 0, 0};
 }
 
 __global__ void gpuRender(uint32_t *sampled_pixels, int pixel_count, size_t image_width, size_t image_height, Scene *scene, curandState *rand_state, int seed)
