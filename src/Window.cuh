@@ -1,6 +1,7 @@
 #pragma once
 #include <SDL2/SDL.h>
 #include "Vec3.cuh"
+#include "Scene.cuh"
 
 class Window
 {
@@ -14,8 +15,7 @@ private:
 public:
     Window(int image_width = 256, int image_height = 256, int window_width = 0, int window_height = 0);
     ~Window();
-    void draw_test();
-    void draw(u_int8_t* pixels);
+    void draw_scene(Scene* scene);
     void show();
     int image_width;
     int image_height;

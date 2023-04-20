@@ -9,6 +9,9 @@
 #include "Hittable.cuh"
 #include "Scene.cuh"
 #include "Vec3.cuh"
+#include "diffuse_formulations.cuh"
+#include "map.cuh"
+
 #include <curand_kernel.h>
 
 #define COLOR_NORMALS false
@@ -19,39 +22,6 @@ Renderer::Renderer()
 
 Renderer::~Renderer()
 {
-}
-
-__device__ float map(float input, float input_start, float input_end, float output_start, float output_end)
-{
-    return output_start + (output_end - output_start) * ((input - input_start) / (input_end - input_start));
-}
-
-__device__ Point random_in_unit_sphere(curandState *local_rand_state)
-{
-    while (true)
-    {
-        Vec3 point = Vec3(curand_uniform(local_rand_state), curand_uniform(local_rand_state), curand_uniform(local_rand_state)) * 2.0f - Vec3(1, 1, 1);
-        if (point.magnitude_squared() >= 1)
-            continue;
-        return point;
-    }
-}
-
-__device__ Direction random_unit_vector(curandState *local_rand_state)
-{
-    return random_in_unit_sphere(local_rand_state).normalize();
-}
-__device__ Point random_in_hemisphere(const Direction &normal, curandState *local_rand_state)
-{
-    Point in_unit_sphere = random_in_unit_sphere(local_rand_state);
-    if (in_unit_sphere.dot(normal) > 0.0)
-    {
-        return in_unit_sphere;
-    }
-    else
-    {
-        return -in_unit_sphere;
-    }
 }
 
 __device__ FloatColor trace_ray(Ray &ray, Camera &camera, Scene *scene, curandState local_rand_state)
@@ -68,7 +38,7 @@ __device__ FloatColor trace_ray(Ray &ray, Camera &camera, Scene *scene, curandSt
             Hit hit;
             Sphere *sphere = (scene->spheres + i);
             hit = sphere->hit(current_ray);
-            //                                                         Fix shadow acne
+                                                            // Fix shadow acne
             if (hit.t < closest_hit.t && hit.t < camera.far && hit.t > 0.001)
             {
                 closest_hit = hit;
@@ -78,22 +48,12 @@ __device__ FloatColor trace_ray(Ray &ray, Camera &camera, Scene *scene, curandSt
         if (closest_hit.hittable)
         {
             Sphere sphere = *((Sphere *)closest_hit.hittable);
-            // Direction normal = (sphere.position - closest_hit.p).normalize();
             Direction normal = (closest_hit.p - sphere.position).normalize();
-
-            // normal = normal.normalize();
-
-            // normal.x = -normal.x;
-            // normal.y = -normal.y;
             normal.z = -normal.z;
 
             if (COLOR_NORMALS)
             {
                 return FloatColor{normal.x + 1, normal.y + 1, normal.z + 1} * 0.5;
-                // return FloatColor{normal.x + 1, normal.y + 1, normal.z + 1} * 0.5;
-                // normal = (normal + 1) * 0.5;
-                // normal = -normal + 1;
-                // return FloatColor{normal.x, normal.y, normal.z};
             }
             current_attenuation = sphere.get_material().color * current_attenuation;
 
@@ -109,17 +69,16 @@ __device__ FloatColor trace_ray(Ray &ray, Camera &camera, Scene *scene, curandSt
             Direction ray_unit_direction = current_ray.direction.normalize();
             float y = 0.5 * (ray_unit_direction.y + 1.0);
             FloatColor background_color = FloatColor(1.0, 1.0, 1.0) * (1.0 - y) + FloatColor(0.5, 0.7, 1.0) * y;
-            // FloatColor background_color = FloatColor(1, 1, 1);
             return background_color * current_attenuation;
-
-            // return FloatColor(1.0, 1.0, 1.0) * (1.0f - darkness) + (FloatColor(0.5, .7, 1.0) * (darkness));
-            // return camera.background * current_attenuation;
         }
     }
 
     // max bounces reached
     return FloatColor{0, 0, 0};
 }
+
+
+// SETUP RENDERING
 
 __global__ void gpuRender(uint32_t *sampled_pixels, int pixel_count, size_t image_width, size_t image_height, Scene *scene, curandState *rand_state, int seed)
 {
@@ -136,17 +95,10 @@ __global__ void gpuRender(uint32_t *sampled_pixels, int pixel_count, size_t imag
     float random_x = (curand_uniform(&local_rand_state));
     float random_y = (curand_uniform(&local_rand_state));
 
-    // printf("random_x: %f, random_y: %f\n", random_x, random_y);
-    // sampled_pixels[index] += 255;
-    // sampled_pixels[index + 1] += 255;
-    // sampled_pixels[index + 2] += 255;
-    // scene->camera.to_viewport(x, y);
-    // camera.to_viewport(x, y);
     Camera camera = scene->camera;
     Direction ray_direction = scene->camera.to_viewport(x + random_x, y + random_y) - camera.position;
     Ray ray = {.direction = ray_direction, .origin = camera.position};
 
-    // return;
     Color color = trace_ray(ray, camera, scene, local_rand_state).square_root().to_int_color();
 
     sampled_pixels[index] += color.r;
