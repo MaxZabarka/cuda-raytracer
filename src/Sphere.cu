@@ -11,10 +11,6 @@ __device__ __host__ Sphere::~Sphere()
 {
 }
 
-// int Sphere::test() {
-//     return 0;
-// }
-
 __device__ __host__ Hit Sphere::hit(Ray &ray)
 {
     Hit hit{INFINITY, Vec3{}, this};
