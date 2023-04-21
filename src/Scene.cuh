@@ -1,9 +1,9 @@
 #pragma once
 #include "Sphere.cuh"
 #include "Camera.cuh"
+#include "HittableList.cuh"
 
 struct Scene {
-    Hittable** hittables;
-    int sphere_count;
+    HittableList hittable_list;
     Camera camera;
 };

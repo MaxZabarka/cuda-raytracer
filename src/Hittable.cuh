@@ -3,14 +3,18 @@
 #include "Material.cuh"
 #include "Hit.cuh"
 
+// enum HittableType
+// {
+//     SPHERE,
+// };
+
 class Hit;
 
 class Hittable
 {
 protected:
-    Hittable() {} ;
+    Hittable(){};
 
 public:
     __device__ __host__ virtual Hit hit(const Ray &ray) = 0;
-    __device__ __host__ virtual Material get_material() = 0;
 };

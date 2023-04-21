@@ -36,11 +36,13 @@ __device__ __host__ Hit Sphere::hit(const Ray &ray)
         hit.t = (-b - sqrt(discriminant)) / (2 * a);
         hit.p = ray.origin + (ray.direction * hit.t);
     }
-
+    hit.material = material;
+    hit.normal = (hit.p - position).normalize();
     return hit;
 }
 
-__host__ __device__ Material Sphere::get_material()
-{
-    return material;
-}
+// __device__ __host__ HittableType Sphere::get_type()
+// {
+//     return HittableType::SPHERE;
+// }
+

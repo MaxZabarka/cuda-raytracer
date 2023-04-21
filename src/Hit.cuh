@@ -1,5 +1,6 @@
 #pragma once
 #include "Vec3.cuh"
+#include "Material.cuh"
 
 struct Hit
 {
@@ -8,4 +9,6 @@ struct Hit
 
     Vec3 p; // point of intersection
     void *hittable;
+    Vec3 normal;
+    Material material;
 };

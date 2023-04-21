@@ -43,6 +43,8 @@ void printPointerLocation(void *ptr)
 
 int main()
 {
+    // int image_width = 48;
+    // int image_height = 48;
 
     int image_width = 512;
     int image_height = 288;
@@ -53,30 +55,29 @@ int main()
     cudaMallocManaged(&scene, sizeof(Scene));
 
     Hittable **host_hittables;
-    int hittable_count = 2;
+    int num_hittables = 2;
+    scene->hittable_list.size = num_hittables;
 
-    scene->hittables = (Hittable **)cuda::mallocManaged(sizeof(Hittable *) * hittable_count);
+    scene->hittable_list.hittables = (Hittable **)cuda::mallocManaged(sizeof(Hittable *) * num_hittables);
+    
 
     Sphere test_hittable = Sphere(Point{0.0F, 0.0F, 1.0F}, 0.5, Material{FloatColor{0.5f, 0.5f, 0.5f}});
-    scene->hittables[0] = (Hittable *)cuda::mallocManaged(sizeof(Sphere));
-    cuda::copyToDevice(scene->hittables[0], &test_hittable, sizeof(Sphere));
+    scene->hittable_list.hittables[0] = (Hittable *)cuda::mallocManaged(sizeof(Sphere));
+    cuda::copyToDevice(scene->hittable_list.hittables[0], &test_hittable, sizeof(Sphere));
     // https://forums.developer.nvidia.com/t/copying-objects-to-device-with-virtual-functions/54927
-    fixVirtualPointers<<<1, 1>>>((Sphere *)scene->hittables[0]);
+    fixVirtualPointers<<<1, 1>>>((Sphere *)scene->hittable_list.hittables[0]);
 
     Sphere test_hittable2 = Sphere(Point{0.0F, -100.5F, 0.0F}, 100, Material{FloatColor{0.5f, 0.5f, 0.5f}});
-    scene->hittables[1] = (Hittable *)cuda::mallocManaged(sizeof(Sphere));
-    cuda::copyToDevice(scene->hittables[1], &test_hittable2, sizeof(Sphere));
-    // https://forums.developer.nvidia.com/t/copying-objects-to-device-with-virtual-functions/54927
-    fixVirtualPointers<<<1, 1>>>((Sphere *)scene->hittables[1]);
-
+    scene->hittable_list.hittables[1] = (Hittable *)cuda::mallocManaged(sizeof(Sphere));
+    cuda::copyToDevice(scene->hittable_list.hittables[1], &test_hittable2, sizeof(Sphere));
+    fixVirtualPointers<<<1, 1>>>((Sphere *)scene->hittable_list.hittables[1]);
 
 
     printf("sizeof sphere: %d\n", sizeof(Sphere));
 
-    printf("radius: %f\n", ((Sphere *)scene->hittables[0])->radius);
-    printPointerLocation(&((Sphere *)scene->hittables[0])->radius);
+    printf("radius: %f\n", ((Sphere *)scene->hittable_list.hittables[0])->radius);
+    printPointerLocation(&((Sphere *)scene->hittable_list.hittables[0])->radius);
 
-    scene->sphere_count = hittable_count;
 
     Camera camera{image_width, image_height, Point(0.0f, 0.0f, 0.0f)};
     scene->camera = camera;

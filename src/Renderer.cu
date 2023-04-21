@@ -48,34 +48,37 @@ __device__ FloatColor trace_ray(Ray &ray, Camera &camera, Scene *scene, curandSt
 
     for (int _ = 0; _ < 50; _++)
     {
-        Hit closest_hit = Hit{INFINITY, Vec3(0, 0, 0), nullptr};
+        Hit closest_hit = scene->hittable_list.hit(current_ray);
+        // Hit closest_hit = Hit{INFINITY, Vec3(0, 0, 0), nullptr};
 
-        for (int i = 0; i < scene->sphere_count; i++)
-        {
-            Hit hit;
-            Hittable *sphere = *(scene->hittables + i);
-
-            hit = sphere->hit(current_ray);
-            // Fix shadow acne
-            if (hit.t < closest_hit.t && hit.t < camera.far && hit.t > 0.001)
-            {
-                closest_hit = hit;
-            }
-        }
+        // for (int i = 0; i < scene->hittable_count; i++)
+        // {
+        //     Hit hit;
+        //     Hittable *hittable = *(scene->hittables + i);
+        //     hit = hittable->hit(current_ray);
+        //     // Fix shadow acne
+        //     if (hit.t < closest_hit.t && hit.t < camera.far && hit.t > 0.001)
+        //     {
+        //         closest_hit = hit;
+        //     }
+        // }
 
         if (closest_hit.hittable)
         {
-            Hittable *sphere = ((Hittable *)closest_hit.hittable);
+            // printf()
+            // Hittable *hittable = ((Hittable *)closest_hit.hittable);
+            Direction normal = closest_hit.normal;
 
             // Direction normal = (closest_hit.p - sphere->position).normalize();
-            Direction normal = Vec3(0, 0, 0);
+            // Direction normal = Vec3(0, 0, 0);
             // normal.z = -normal.z;
 
             if (COLOR_NORMALS)
             {
                 return FloatColor{normal.x + 1, normal.y + 1, normal.z + 1} * 0.5;
             }
-            current_attenuation = sphere->get_material().color * current_attenuation;
+            current_attenuation = closest_hit.material.color * current_attenuation;
+            // current_attenuation = hittable->get_material().color * current_attenuation;
 
             // Point target = closest_hit.p + normal + random_in_unit_sphere(&local_rand_state);
             // Point target = closest_hit.p + normal + random_unit_vector(&local_rand_state);

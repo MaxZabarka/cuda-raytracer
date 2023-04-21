@@ -12,7 +12,7 @@ public:
    __device__ __host__ Sphere(Point position = Point{}, float radius = 0.75, Material material = Material{FloatColor{0.5f, 0.5f, 0.5f}});
     __device__ __host__ ~Sphere();
     __device__ __host__ virtual Hit hit(const Ray &ray) override;
-    __device__ __host__ virtual Material get_material() override;
+    // __device__ __host__ virtual HittableType get_type() override;
     Point position;
     Material material;
     float radius;
