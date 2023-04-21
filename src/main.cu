@@ -44,8 +44,8 @@ void printPointerLocation(void *ptr)
 int main()
 {
 
-    int image_width = 60;
-    int image_height = 60;
+    int image_width = 512;
+    int image_height = 288;
 
     Window window{image_width, image_height};
 
@@ -53,16 +53,22 @@ int main()
     cudaMallocManaged(&scene, sizeof(Scene));
 
     Hittable **host_hittables;
-    int hittable_count = 1;
+    int hittable_count = 2;
 
     scene->hittables = (Hittable **)cuda::mallocManaged(sizeof(Hittable *) * hittable_count);
 
-    Sphere test_hittable = Sphere(Point{0.0F, 0.0F, 1.0F}, 0.5, Material{FloatColor{1.0f, 0.0f, 0.0f}});
-
+    Sphere test_hittable = Sphere(Point{0.0F, 0.0F, 1.0F}, 0.5, Material{FloatColor{0.5f, 0.5f, 0.5f}});
     scene->hittables[0] = (Hittable *)cuda::mallocManaged(sizeof(Sphere));
     cuda::copyToDevice(scene->hittables[0], &test_hittable, sizeof(Sphere));
     // https://forums.developer.nvidia.com/t/copying-objects-to-device-with-virtual-functions/54927
     fixVirtualPointers<<<1, 1>>>((Sphere *)scene->hittables[0]);
+
+    Sphere test_hittable2 = Sphere(Point{0.0F, -100.5F, 0.0F}, 100, Material{FloatColor{0.5f, 0.5f, 0.5f}});
+    scene->hittables[1] = (Hittable *)cuda::mallocManaged(sizeof(Sphere));
+    cuda::copyToDevice(scene->hittables[1], &test_hittable2, sizeof(Sphere));
+    // https://forums.developer.nvidia.com/t/copying-objects-to-device-with-virtual-functions/54927
+    fixVirtualPointers<<<1, 1>>>((Sphere *)scene->hittables[1]);
+
 
 
     printf("sizeof sphere: %d\n", sizeof(Sphere));
