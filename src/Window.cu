@@ -125,7 +125,6 @@ void Window::draw_scene(Scene* scene)
                         NULL,
                         (void **)(&pixels),
                         &pitch);
-
         gpuRenderer.render(sampled_pixels, scene, *this, current_sample);
         // return;
         current_sample++;
