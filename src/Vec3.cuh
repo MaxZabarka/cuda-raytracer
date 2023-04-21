@@ -21,6 +21,8 @@ public:
     __device__ __host__ float magnitude_squared() const;
     __device__ __host__ Vec3 normalize() const;
 
+    __device__ __host__ Vec3 cross(const Vec3 &other) const;
+
     __device__ __host__ Color to_int_color() const;
     __device__ __host__ Vec3 square_root() const;
 

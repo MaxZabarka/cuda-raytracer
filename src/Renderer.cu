@@ -14,15 +14,14 @@
 
 #include <curand_kernel.h>
 
-#define COLOR_NORMALS false
+#define COLOR_NORMALS true
 
 template <typename T>
 __global__ void fixVirtualPointers(T *other)
 {
-
-        printf("Fixing virtual pointers\n");
-        T temp = T(*other);
-        memcpy(other, &temp, sizeof(T));
+    printf("Fixing virtual pointers\n");
+    T temp = T(*other);
+    memcpy(other, &temp, sizeof(T));
 }
 
 Renderer::Renderer()
@@ -37,51 +36,19 @@ __device__ FloatColor trace_ray(Ray &ray, Camera &camera, Scene *scene, curandSt
 {
     Ray current_ray = Ray{ray.direction, ray.origin};
     FloatColor current_attenuation = FloatColor{1.0f, 1.0f, 1.0f};
-    // printf("\nColor: %d\n", *(scene->hittables[0]));
-
-    // printf("%d\n", *(scene->hittables));
-    // printf("%d\n", ((Sphere *)scene->hittables[0])->radius);
-    // printf("device: %f\n", ((Sphere *)scene->hittables[0])->material.color.x);
-    // printf("color2: %f\n", ((Sphere *)scene->hittables[0])->get_material().color.y);
-    // scene->hittables[0]->get_material();
-    // printf("\nColor: %f\n", scene->hittables[0]->get_material().color.x);
-
     for (int _ = 0; _ < 50; _++)
     {
         Hit closest_hit = scene->hittable_list.hit(current_ray);
-        // Hit closest_hit = Hit{INFINITY, Vec3(0, 0, 0), nullptr};
-
-        // for (int i = 0; i < scene->hittable_count; i++)
-        // {
-        //     Hit hit;
-        //     Hittable *hittable = *(scene->hittables + i);
-        //     hit = hittable->hit(current_ray);
-        //     // Fix shadow acne
-        //     if (hit.t < closest_hit.t && hit.t < camera.far && hit.t > 0.001)
-        //     {
-        //         closest_hit = hit;
-        //     }
-        // }
-
+        
         if (closest_hit.hittable)
         {
-            // printf()
-            // Hittable *hittable = ((Hittable *)closest_hit.hittable);
             Direction normal = closest_hit.normal;
-
-            // Direction normal = (closest_hit.p - sphere->position).normalize();
-            // Direction normal = Vec3(0, 0, 0);
-            // normal.z = -normal.z;
 
             if (COLOR_NORMALS)
             {
                 return FloatColor{normal.x + 1, normal.y + 1, normal.z + 1} * 0.5;
             }
             current_attenuation = closest_hit.material.color * current_attenuation;
-            // current_attenuation = hittable->get_material().color * current_attenuation;
-
-            // Point target = closest_hit.p + normal + random_in_unit_sphere(&local_rand_state);
-            // Point target = closest_hit.p + normal + random_unit_vector(&local_rand_state);
             Point target = closest_hit.p + random_in_hemisphere(normal, &local_rand_state);
 
             current_ray.origin = closest_hit.p;
@@ -101,7 +68,6 @@ __device__ FloatColor trace_ray(Ray &ray, Camera &camera, Scene *scene, curandSt
 }
 
 // SETUP RENDERING
-
 __global__ void gpuRender(uint32_t *sampled_pixels, int pixel_count, size_t image_width, size_t image_height, Scene *scene, curandState *rand_state, int seed)
 {
     int x = (threadIdx.x + blockIdx.x * blockDim.x);
@@ -130,8 +96,6 @@ __global__ void gpuRender(uint32_t *sampled_pixels, int pixel_count, size_t imag
 
 void Renderer::render(uint32_t *h_sampled_pixels, Scene *scene, Window &window, int seed)
 {
-    // printf("\nColor: %f\n", scene->hittables[0]->get_material().color.x);
-
     size_t pixels_size = window.image_width * window.image_height * 3 * sizeof(uint32_t);
     size_t pixel_count = window.image_height * window.image_width;
 
@@ -140,9 +104,6 @@ void Renderer::render(uint32_t *h_sampled_pixels, Scene *scene, Window &window, 
     // Set up device memory
     uint32_t *d_pixels = (uint32_t *)cuda::malloc(pixels_size);
     cuda::copyToDevice(d_pixels, h_sampled_pixels, pixels_size);
-
-    // need to fix for all objects in scene
-    // fixVirtualPointers<<<1, 1>>>((Sphere *)scene->hittables[0]);
 
     int tx = 16;
     int ty = 16;

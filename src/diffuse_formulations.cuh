@@ -1,3 +1,4 @@
+#pragma once
 #include <curand_kernel.h>
 #include "Vec3.cuh"
 

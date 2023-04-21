@@ -59,3 +59,8 @@ __device__ __host__ Vec3 Vec3::square_root() const
 {
     return Vec3(sqrt(x), sqrt(y), sqrt(z));
 }
+
+__device__ __host__ Vec3 Vec3::cross(const Vec3 &other) const
+{
+    return Vec3(y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x);
+}
