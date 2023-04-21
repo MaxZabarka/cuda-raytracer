@@ -4,15 +4,15 @@
 #include "Hittable.cuh"
 #include "Vec3.cuh"
 
-class Sphere
+class Sphere: public Hittable
 {
 private:
 
 public:
    __device__ __host__ Sphere(Point position = Point{}, float radius = 0.75, Material material = Material{FloatColor{0.5f, 0.5f, 0.5f}});
     __device__ __host__ ~Sphere();
-    __device__ __host__ Hit hit( Ray &ray);
-    __device__ __host__ Material get_material();
+    __device__ __host__ virtual Hit hit(const Ray &ray) override;
+    __device__ __host__ virtual Material get_material() override;
     Point position;
     Material material;
     float radius;

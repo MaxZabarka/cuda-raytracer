@@ -28,6 +28,13 @@ __device__ FloatColor trace_ray(Ray &ray, Camera &camera, Scene *scene, curandSt
 {
     Ray current_ray = Ray{ray.direction, ray.origin};
     FloatColor current_attenuation = FloatColor{1.0f, 1.0f, 1.0f};
+    // printf("\nColor: %d\n", *(scene->hittables[0]));
+
+    // printf("%d\n", *(scene->hittables));
+    // printf("%d\n", ((Sphere *)scene->hittables[0])->radius);
+
+    return FloatColor{0, 0, 0};
+    // printf("%d\n", ((Sphere*)scene->hittables[0])->radius);
 
     for (int _ = 0; _ < 50; _++)
     {
@@ -36,9 +43,10 @@ __device__ FloatColor trace_ray(Ray &ray, Camera &camera, Scene *scene, curandSt
         for (int i = 0; i < scene->sphere_count; i++)
         {
             Hit hit;
-            Sphere *sphere = (scene->spheres + i);
+            Hittable *sphere = *(scene->hittables + i);
+
             hit = sphere->hit(current_ray);
-                                                            // Fix shadow acne
+            // Fix shadow acne
             if (hit.t < closest_hit.t && hit.t < camera.far && hit.t > 0.001)
             {
                 closest_hit = hit;
@@ -47,15 +55,17 @@ __device__ FloatColor trace_ray(Ray &ray, Camera &camera, Scene *scene, curandSt
 
         if (closest_hit.hittable)
         {
-            Sphere sphere = *((Sphere *)closest_hit.hittable);
-            Direction normal = (closest_hit.p - sphere.position).normalize();
-            normal.z = -normal.z;
+            Hittable *sphere = ((Hittable *)closest_hit.hittable);
+
+            // Direction normal = (closest_hit.p - sphere->position).normalize();
+            Direction normal = Vec3(0, 0, 0);
+            // normal.z = -normal.z;
 
             if (COLOR_NORMALS)
             {
                 return FloatColor{normal.x + 1, normal.y + 1, normal.z + 1} * 0.5;
             }
-            current_attenuation = sphere.get_material().color * current_attenuation;
+            current_attenuation = sphere->get_material().color * current_attenuation;
 
             // Point target = closest_hit.p + normal + random_in_unit_sphere(&local_rand_state);
             // Point target = closest_hit.p + normal + random_unit_vector(&local_rand_state);
@@ -76,7 +86,6 @@ __device__ FloatColor trace_ray(Ray &ray, Camera &camera, Scene *scene, curandSt
     // max bounces reached
     return FloatColor{0, 0, 0};
 }
-
 
 // SETUP RENDERING
 
@@ -108,6 +117,8 @@ __global__ void gpuRender(uint32_t *sampled_pixels, int pixel_count, size_t imag
 
 void Renderer::render(uint32_t *h_sampled_pixels, Scene *scene, Window &window, int seed)
 {
+
+    printf("\nColor: %f\n", scene->hittables[0]->get_material().color.y);
 
     size_t pixels_size = window.image_width * window.image_height * 3 * sizeof(uint32_t);
     size_t pixel_count = window.image_height * window.image_width;

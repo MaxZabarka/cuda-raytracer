@@ -3,7 +3,7 @@
 #include "Camera.cuh"
 
 struct Scene {
-    Sphere* spheres;
+    Hittable** hittables;
     int sphere_count;
     Camera camera;
 };

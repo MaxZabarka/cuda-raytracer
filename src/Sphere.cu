@@ -11,7 +11,8 @@ __device__ __host__ Sphere::~Sphere()
 {
 }
 
-__device__ __host__ Hit Sphere::hit(Ray &ray)
+
+__device__ __host__ Hit Sphere::hit(const Ray &ray)
 {
     Hit hit{INFINITY, Vec3{}, this};
 
