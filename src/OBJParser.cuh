@@ -2,6 +2,7 @@
 #include <string>
 #include "Vec3.cuh"
 #include <vector>
+#include "Triangle.cuh"
 
 struct VertexIndices
 {
@@ -10,18 +11,6 @@ struct VertexIndices
     size_t normal_index;
 };
 
-struct Vertex
-{
-    Point position;
-    Vec3 texcoord;
-    Direction normal;
-};
-
-struct TriangleData {
-    Vertex v1;
-    Vertex v2;
-    Vertex v3;
-};
 
 class OBJParser
 {
