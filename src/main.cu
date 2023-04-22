@@ -42,7 +42,7 @@ int main()
     printf("%f\n", mesh.geometry.triangles[0].a.position.y);
     printf("%f\n", ((Mesh *)scene->hittable_list.hittables[0])->geometry.triangles[0].a.position.y);
 
-    print_pointer_location(((Mesh *)scene->hittable_list.hittables[0])->triangles);
+    // print_pointer_location(((Mesh *)scene->hittable_list.hittables[0]));
 
     // for (int i = 0; i < num_hittables; i++)
     // {
@@ -81,7 +81,7 @@ int main()
     // cuda::copyToDevice(scene->hittable_list.hittables[3], &test_hittable4, sizeof(Triangle));
     // cuda::fixVirtualPointers<<<1, 1>>>((Triangle *)scene->hittable_list.hittables[3]);
 
-    Camera camera{image_width, image_height, Point(0.0f, 0.0f, 0.0f)};
+    Camera camera{image_width, image_height, Point(0.0f, 0.0f, -5.0f)};
     scene->camera = camera;
 
     window.draw_scene(scene);
