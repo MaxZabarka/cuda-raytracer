@@ -16,13 +16,6 @@
 
 #define COLOR_NORMALS true
 
-template <typename T>
-__global__ void fixVirtualPointers(T *other)
-{
-    printf("Fixing virtual pointers\n");
-    T temp = T(*other);
-    memcpy(other, &temp, sizeof(T));
-}
 
 Renderer::Renderer()
 {

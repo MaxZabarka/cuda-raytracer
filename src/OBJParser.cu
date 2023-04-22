@@ -3,6 +3,8 @@
 #include <iostream>
 #include "Vec3.cuh"
 #include <vector>
+#include "Geometry.cuh"
+#include "cuda-wrapper/cuda.cuh"
 
 OBJParser::OBJParser(
     std::string file_path)
@@ -56,13 +58,15 @@ VertexIndices OBJParser::parse_vertex_indices(std::string line, size_t *line_ind
     return vertex_indices;
 }
 
-std::vector<TriangleData> OBJParser::parse()
+Geometry OBJParser::parse()
 {
     std::ifstream file(file_path);
     if (!file.is_open())
     {
         throw std::runtime_error("Could not open file: " + file_path);
     }
+
+    Geometry geometry = Geometry();
 
     std::vector<TriangleData> triangles;
     std::vector<Point> vertex_positions;
@@ -117,6 +121,11 @@ std::vector<TriangleData> OBJParser::parse()
         }
     }
 
+    TriangleData* arr_triangles = (TriangleData*)cuda::mallocManaged(triangles.size() * sizeof(TriangleData));
+    std::copy(triangles.begin(), triangles.end(), arr_triangles);
+    geometry.triangles = arr_triangles;
+    geometry.num_triangles = triangles.size();
+
     // // Print first triangle data
     // std:: cout << "Triangle 1: " << std::endl;
     // std:: cout << "Vertex 1: " << std::endl;
@@ -127,14 +136,14 @@ std::vector<TriangleData> OBJParser::parse()
     // std:: cout << "Position: " << triangles[0].v3.position.x << ", " << triangles[0].v3.position.y << ", " << triangles[0].v3.position.z << std::endl;
 
     // Print the vertex normals of the first triangle
-    std::cout << "Triangle 1: " << std::endl;
-    std::cout << "Vertex 1: " << std::endl;
-    std::cout << "Normal: " << triangles[0].a.normal.x << ", " << triangles[0].a.normal.y << ", " << triangles[0].a.normal.z << std::endl;
-    std::cout << "Vertex 2: " << std::endl;
-    std::cout << "Normal: " << triangles[0].b.normal.x << ", " << triangles[0].b.normal.y << ", " << triangles[0].b.normal.z << std::endl;
-    std::cout << "Vertex 3: " << std::endl;
-    std::cout << "Normal: " << triangles[0].c.normal.x << ", " << triangles[0].c.normal.y << ", " << triangles[0].c.normal.z << std::endl;
+    // std::cout << "Triangle 1: " << std::endl;
+    // std::cout << "Vertex 1: " << std::endl;
+    // std::cout << "Normal: " << triangles[0].a.normal.x << ", " << triangles[0].a.normal.y << ", " << triangles[0].a.normal.z << std::endl;
+    // std::cout << "Vertex 2: " << std::endl;
+    // std::cout << "Normal: " << triangles[0].b.normal.x << ", " << triangles[0].b.normal.y << ", " << triangles[0].b.normal.z << std::endl;
+    // std::cout << "Vertex 3: " << std::endl;
+    // std::cout << "Normal: " << triangles[0].c.normal.x << ", " << triangles[0].c.normal.y << ", " << triangles[0].c.normal.z << std::endl;
     
     
-    return triangles;
+    return geometry;
 }
