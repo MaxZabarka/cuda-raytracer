@@ -40,6 +40,9 @@
         "tuple": "cpp",
         "type_traits": "cpp",
         "typeinfo": "cpp",
-        "target": "cpp"
+        "target": "cpp",
+        "cstddef": "cpp",
+        "cstring": "cpp",
+        "fstream": "cpp"
     }
 }
