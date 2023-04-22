@@ -96,6 +96,32 @@ Geometry OBJParser::parse()
             float y = parse_float(line, &line_index);
             float z = parse_float(line, &line_index);
 
+            if (x < geometry.min_bounds.x)
+            {
+                geometry.min_bounds.x = x;
+            }
+            if (y < geometry.min_bounds.y)
+            {
+                geometry.min_bounds.y = y;
+            }
+            if (z < geometry.min_bounds.z)
+            {
+                geometry.min_bounds.z = z;
+            }
+
+            if (x > geometry.max_bounds.x)
+            {
+                geometry.max_bounds.x = x;
+            }
+            if (y > geometry.max_bounds.y)
+            {
+                geometry.max_bounds.y = y;
+            }
+            if (z > geometry.max_bounds.z)
+            {
+                geometry.max_bounds.z = z;
+            }
+
             vertex_positions.push_back(Point(x, y, z));
         }
         else if (line_directive == "vn")
@@ -125,6 +151,10 @@ Geometry OBJParser::parse()
     std::copy(triangles.begin(), triangles.end(), arr_triangles);
     geometry.triangles = arr_triangles;
     geometry.num_triangles = triangles.size();
+
+    // Print bounds
+    std:: cout << "Min bounds: " << geometry.min_bounds.x << ", " << geometry.min_bounds.y << ", " << geometry.min_bounds.z << std::endl;
+    std:: cout << "Max bounds: " << geometry.max_bounds.x << ", " << geometry.max_bounds.y << ", " << geometry.max_bounds.z << std::endl;
 
     // // Print first triangle data
     // std:: cout << "Triangle 1: " << std::endl;
