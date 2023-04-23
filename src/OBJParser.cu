@@ -3,6 +3,7 @@
 #include <iostream>
 #include "Vec3.cuh"
 #include <vector>
+#include "cuda.cuh"
 
 OBJParser::OBJParser(
     std::string file_path)
@@ -56,7 +57,7 @@ VertexIndices OBJParser::parse_vertex_indices(std::string line, size_t *line_ind
     return vertex_indices;
 }
 
-std::vector<TriangleData> OBJParser::parse()
+HittableList OBJParser::parse()
 {
     std::ifstream file(file_path);
     if (!file.is_open())
@@ -64,7 +65,7 @@ std::vector<TriangleData> OBJParser::parse()
         throw std::runtime_error("Could not open file: " + file_path);
     }
 
-    std::vector<TriangleData> triangles;
+    std::vector<Triangle> triangles;
     std::vector<Point> vertex_positions;
     std::vector<Direction> vertex_normals;
     std::vector<Vec3> vertex_texture_coords;
@@ -112,29 +113,13 @@ std::vector<TriangleData> OBJParser::parse()
             Vertex v3 = Vertex{vertex_positions[vi_3.position_index], vertex_normals[vi_3.normal_index]};
 
             TriangleData triangle_data = TriangleData{v1, v2, v3};
+            Triangle triangle = Triangle{triangle_data, Material{FloatColor{0.5, 0.5, 0.5}}};
 
-            triangles.push_back(triangle_data);
+            triangles.push_back(triangle);
         }
     }
+    Hittable** hittables = cuda::malloc
+    HittableList hittable_list = HittableList{triangles};
 
-    // // Print first triangle data
-    // std:: cout << "Triangle 1: " << std::endl;
-    // std:: cout << "Vertex 1: " << std::endl;
-    // std:: cout << "Position: " << triangles[0].v1.position.x << ", " << triangles[0].v1.position.y << ", " << triangles[0].v1.position.z << std::endl;
-    // std:: cout << "Vertex 2: " << std::endl;
-    // std:: cout << "Position: " << triangles[0].v2.position.x << ", " << triangles[0].v2.position.y << ", " << triangles[0].v2.position.z << std::endl;
-    // std:: cout << "Vertex 3: " << std::endl;
-    // std:: cout << "Position: " << triangles[0].v3.position.x << ", " << triangles[0].v3.position.y << ", " << triangles[0].v3.position.z << std::endl;
-
-    // Print the vertex normals of the first triangle
-    std::cout << "Triangle 1: " << std::endl;
-    std::cout << "Vertex 1: " << std::endl;
-    std::cout << "Normal: " << triangles[0].a.normal.x << ", " << triangles[0].a.normal.y << ", " << triangles[0].a.normal.z << std::endl;
-    std::cout << "Vertex 2: " << std::endl;
-    std::cout << "Normal: " << triangles[0].b.normal.x << ", " << triangles[0].b.normal.y << ", " << triangles[0].b.normal.z << std::endl;
-    std::cout << "Vertex 3: " << std::endl;
-    std::cout << "Normal: " << triangles[0].c.normal.x << ", " << triangles[0].c.normal.y << ", " << triangles[0].c.normal.z << std::endl;
-    
-    
     return triangles;
 }

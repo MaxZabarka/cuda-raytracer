@@ -7,6 +7,8 @@
 #include "cuda-wrapper/cuda.cuh"
 #include "Triangle.cuh"
 #include "OBJParser.cuh"
+#include "BoundingBox.cuh"
+#include "print_pointer_location.cuh"
 
 int main()
 {
@@ -16,7 +18,6 @@ int main()
     // int image_width = 48;
     // int image_height = 48;
 
-
     int image_width = 512;
     int image_height = 288;
 
@@ -24,21 +25,28 @@ int main()
 
     Scene *scene;
     cudaMallocManaged(&scene, sizeof(Scene));
+    scene->hittable_list.size = 1;
+    scene->hittable_list.hittables = (Hittable **)cuda::mallocManaged(sizeof(Hittable *) * scene->hittable_list.size);
 
-    int num_hittables = triangle_data.size();
-    scene->hittable_list.size = num_hittables;
+    Hittable **hittables = (Hittable **)cuda::mallocManaged(sizeof(Hittable *) * triangle_data.size());
+    HittableList box_hittable_list = HittableList(hittables, triangle_data.size());
+    BoundingBox bounding_box = BoundingBox(box_hittable_list, Point{-0.3f, -0.3f, -0.3f}, Point{0.3f, 0.3f, 0.3f});
 
-    scene->hittable_list.hittables = (Hittable **)cuda::mallocManaged(sizeof(Hittable *) * num_hittables);
+    // scene->hittable_list.hittables = (Hittable **)cuda::mallocManaged(sizeof(Hittable *) * num_hittables);
 
-    for (int i = 0; i < num_hittables; i++)
+    for (size_t i = 0; i < triangle_data.size(); i++)
     {
         TriangleData data = triangle_data[i];
         Triangle triangle = Triangle(data, Material{FloatColor{0.5f, 0.5f, 0.5f}});
-        scene->hittable_list.hittables[i] = (Hittable *)cuda::mallocManaged(sizeof(Triangle));
-        cuda::copyToDevice(scene->hittable_list.hittables[i], &triangle, sizeof(Triangle));
-        cuda::fixVirtualPointers<<<1, 1>>>((Triangle *)scene->hittable_list.hittables[i]);
+        bounding_box.hittable_list.hittables[i] = (Hittable *)cuda::mallocManaged(sizeof(Triangle));
+        cuda::copyToDevice(bounding_box.hittable_list.hittables[i], &triangle, sizeof(Triangle));
+        cuda::fixVirtualPointers<<<1, 1>>>((Triangle *)bounding_box.hittable_list.hittables[i]);
         // printf("Triangle: %f, %f, %f\n", data.a.position.x, data.b.position.y, data.c.position.z);
     }
+
+    scene->hittable_list.hittables[0] = (Hittable *)cuda::mallocManaged(sizeof(BoundingBox));
+    cuda::copyToDevice(scene->hittable_list.hittables[0], &bounding_box, sizeof(BoundingBox));
+    cuda::fixVirtualPointers<<<1, 1>>>((BoundingBox *)scene->hittable_list.hittables[0]);
 
     // Triangle test_hittable = Triangle(Point{1.0F, 0.0F, 5.0F}, Point{0.0F, 0.0F, 5.0F}, Point{0.0F, 1.0F, 5.0F}, Material{FloatColor{0.5f, 0.5f, 0.5f}});
     // scene->hittable_list.hittables[0] = (Hittable *)cuda::mallocManaged(sizeof(Triangle));

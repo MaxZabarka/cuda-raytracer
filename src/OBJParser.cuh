@@ -3,6 +3,7 @@
 #include "Vec3.cuh"
 #include <vector>
 #include "Triangle.cuh"
+#include "HittableList.cuh"
 
 struct VertexIndices
 {
@@ -17,7 +18,7 @@ class OBJParser
 public:
     OBJParser(std::string file_path);
     ~OBJParser();
-    std::vector<TriangleData> parse();
+    HittableList parse();
     std::string file_path;
     float parse_float(std::string line, size_t *line_index);
     int parse_int(std::string line, size_t *line_index);

@@ -14,7 +14,7 @@
 
 #include <curand_kernel.h>
 
-#define COLOR_NORMALS true
+#define COLOR_NORMALS false
 
 template <typename T>
 __global__ void fixVirtualPointers(T *other)
