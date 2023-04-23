@@ -10,6 +10,8 @@ __host__ Mesh::Mesh(Geometry &geometry, Material material) : geometry{geometry},
     {
         TriangleData data = geometry.triangles[i];
         triangles[i] = Triangle(data, material);
+        // cuda::fixVirtualPointers << 1, 1 >> (Triangle *)(&triangles[i]);
+        
     }
 }
 
@@ -69,7 +71,6 @@ __device__ __host__ Hit Mesh::hit(const Ray &ray)
             return Hit{INFINITY, Vec3(0, 0, 0), nullptr};
         }
     }
-    
 
     // return Hit{1.0f, Point{0, 0, 0}, this, Point{0, 0, 0}, material};
 
@@ -87,6 +88,6 @@ __device__ __host__ Hit Mesh::hit(const Ray &ray)
             closest_hit = hit;
         }
     }
-    
+
     return closest_hit;
 }
