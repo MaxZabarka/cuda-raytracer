@@ -15,11 +15,12 @@ __device__ __host__ Triangle::~Triangle()
 
 __device__ __host__ Hit Triangle::hit(const Ray &ray)
 {
-
+    printf("%f", material.color.x);
 
     Hit result;
     result.t = INFINITY;
     result.hittable = nullptr;
+
 
     // Edge vectors
     Vec3 edge1 = triangle_data.b.position - triangle_data.a.position;

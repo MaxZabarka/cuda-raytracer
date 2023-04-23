@@ -16,7 +16,6 @@
 
 #define COLOR_NORMALS true
 
-
 Renderer::Renderer()
 {
 }
@@ -27,12 +26,13 @@ Renderer::~Renderer()
 
 __device__ FloatColor trace_ray(Ray &ray, Camera &camera, Scene *scene, curandState local_rand_state)
 {
+
     Ray current_ray = Ray{ray.direction, ray.origin};
     FloatColor current_attenuation = FloatColor{1.0f, 1.0f, 1.0f};
     for (int _ = 0; _ < 50; _++)
     {
         Hit closest_hit = scene->hittable_list.hit(current_ray);
-        
+
         if (closest_hit.hittable)
         {
             Direction normal = closest_hit.normal;
@@ -42,6 +42,7 @@ __device__ FloatColor trace_ray(Ray &ray, Camera &camera, Scene *scene, curandSt
             {
                 return FloatColor{normal.x + 1, normal.y + 1, normal.z + 1} * 0.5;
             }
+
             current_attenuation = closest_hit.material.color * current_attenuation;
             Point target = closest_hit.p + random_in_hemisphere(normal, &local_rand_state);
 

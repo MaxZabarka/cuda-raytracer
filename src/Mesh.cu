@@ -2,6 +2,7 @@
 #include "Mesh.cuh"
 #include <stdio.h>
 #include "cuda-wrapper/cuda.cuh"
+#include "print_pointer_location.cuh"
 
 __host__ Mesh::Mesh(Geometry &geometry, Material material) : geometry{geometry}, material{material}
 {
@@ -10,7 +11,14 @@ __host__ Mesh::Mesh(Geometry &geometry, Material material) : geometry{geometry},
     {
         TriangleData data = geometry.triangles[i];
         triangles[i] = Triangle(data, Material{FloatColor{0.5f, 0.5f, 0.5f}});
+        cuda::fixVirtualPointers<<<1, 1>>>((Triangle *)(&triangles[i]));
     }
+
+    // Print triangle data of first tri
+
+    TriangleData data = triangles[0].triangle_data;
+    printf("Triangle data: \n");
+    printf("v0: %f, %f, %f\n", data.a.position.x, data.a.position.y, data.a.position.z);
 }
 
 __device__ __host__ Mesh::~Mesh()
@@ -18,63 +26,62 @@ __device__ __host__ Mesh::~Mesh()
 }
 
 __device__ __host__ Hit Mesh::hit(const Ray &ray)
-{
-
+{    
     double t_min = -INFINITY;
     double t_max = INFINITY;
 
-    // For each dimension (x, y, z)
-    for (int i = 0; i < 3; ++i)
-    {
-        double inverse_direction, t1, t2;
-        double origin_val, min_bounds_val, max_bounds_val;
+    // // For each dimension (x, y, z)
+    // for (int i = 0; i < 3; ++i)
+    // {
+    //     double inverse_direction, t1, t2;
+    //     double origin_val, min_bounds_val, max_bounds_val;
 
-        switch (i)
-        {
-        case 0:
-            inverse_direction = 1.0 / ray.direction.x;
-            origin_val = ray.origin.x;
-            min_bounds_val = geometry.min_bounds.x;
-            max_bounds_val = geometry.max_bounds.x;
-            break;
-        case 1:
-            inverse_direction = 1.0 / ray.direction.y;
-            origin_val = ray.origin.y;
-            min_bounds_val = geometry.min_bounds.y;
-            max_bounds_val = geometry.max_bounds.y;
-            break;
-        case 2:
-            inverse_direction = 1.0 / ray.direction.z;
-            origin_val = ray.origin.z;
-            min_bounds_val = geometry.min_bounds.z;
-            max_bounds_val = geometry.max_bounds.z;
-            break;
-        }
+    //     switch (i)
+    //     {
+    //     case 0:
+    //         inverse_direction = 1.0 / ray.direction.x;
+    //         origin_val = ray.origin.x;
+    //         min_bounds_val = geometry.min_bounds.x;
+    //         max_bounds_val = geometry.max_bounds.x;
+    //         break;
+    //     case 1:
+    //         inverse_direction = 1.0 / ray.direction.y;
+    //         origin_val = ray.origin.y;
+    //         min_bounds_val = geometry.min_bounds.y;
+    //         max_bounds_val = geometry.max_bounds.y;
+    //         break;
+    //     case 2:
+    //         inverse_direction = 1.0 / ray.direction.z;
+    //         origin_val = ray.origin.z;
+    //         min_bounds_val = geometry.min_bounds.z;
+    //         max_bounds_val = geometry.max_bounds.z;
+    //         break;
+    //     }
 
-        t1 = (min_bounds_val - origin_val) * inverse_direction;
-        t2 = (max_bounds_val - origin_val) * inverse_direction;
+    //     t1 = (min_bounds_val - origin_val) * inverse_direction;
+    //     t2 = (max_bounds_val - origin_val) * inverse_direction;
 
-        if (inverse_direction < 0.0)
-        {
-            double temp = t1;
-            t1 = t2;
-            t2 = temp;
-        }
+    //     if (inverse_direction < 0.0)
+    //     {
+    //         double temp = t1;
+    //         t1 = t2;
+    //         t2 = temp;
+    //     }
 
-        t_min = t_min > t1 ? t_min : t1;
-        t_max = t_max < t2 ? t_max : t2;
+    //     t_min = t_min > t1 ? t_min : t1;
+    //     t_max = t_max < t2 ? t_max : t2;
 
-        if (t_min > t_max)
-        {
-            return Hit{INFINITY, Vec3(0, 0, 0), nullptr};
-        }
-    }
-
+    //     if (t_min > t_max)
+    //     {
+    //         return Hit{INFINITY, Vec3(0, 0, 0), nullptr};
+    //     }
+    // }
 
     Hit closest_hit = Hit{INFINITY, Vec3(0, 0, 0), nullptr};
 
     for (size_t i = 0; i < geometry.num_triangles; i++)
     {
+        // print_pointer_location(triangles);
         Triangle triangle = triangles[i];
         Hit hit = triangle.hit(ray);
         // Fix shadow acne
