@@ -44,15 +44,15 @@ int main()
 
     print_pointer_location(((Mesh *)scene->hittable_list.hittables[0])->triangles);
 
-    // for (int i = 0; i < num_hittables; i++)
-    // {
-    //     TriangleData data = triangle_data[i];
-    //     Triangle triangle = Triangle(data, Material{FloatColor{0.5f, 0.5f, 0.5f}});
-    //     scene->hittable_list.hittables[i] = (Hittable *)cuda::mallocManaged(sizeof(Triangle));
-    //     cuda::copyToDevice(scene->hittable_list.hittables[i], &triangle, sizeof(Triangle));
-    //     cuda::fixVirtualPointers<<<1, 1>>>((Triangle *)scene->hittable_list.hittables[i]);
-    //     // printf("Triangle: %f, %f, %f\n", data.a.position.x, data.b.position.y, data.c.position.z);
-    // }
+    for (int i = 0; i < num_hittables; i++)
+    {
+        TriangleData data = triangle_data[i];
+        Triangle triangle = Triangle(data.v1.position, data.v2.position, data.v3.position, Material{FloatColor{0.5f, 0.5f, 0.5f}});
+        scene->hittable_list.hittables[i] = (Hittable *)cuda::mallocManaged(sizeof(Triangle));
+        cuda::copyToDevice(scene->hittable_list.hittables[i], &triangle, sizeof(Triangle));
+        cuda::fixVirtualPointers<<<1, 1>>>((Triangle *)scene->hittable_list.hittables[i]);
+        printf("Triangle: %f, %f, %f\n", data.v1.position.x, data.v1.position.y, data.v1.position.z);
+    }
 
     // Triangle test_hittable = Triangle(Point{1.0F, 0.0F, 5.0F}, Point{0.0F, 0.0F, 5.0F}, Point{0.0F, 1.0F, 5.0F}, Material{FloatColor{0.5f, 0.5f, 0.5f}});
     // scene->hittable_list.hittables[0] = (Hittable *)cuda::mallocManaged(sizeof(Triangle));

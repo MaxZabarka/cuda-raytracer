@@ -2,8 +2,11 @@
 #include <string>
 #include "Vec3.cuh"
 #include <vector>
+<<<<<<< HEAD
 #include "Triangle.cuh"
 #include "Geometry.cuh"
+=======
+>>>>>>> parent of af5e36a (smooth shading)
 
 struct VertexIndices
 {
@@ -12,6 +15,18 @@ struct VertexIndices
     size_t normal_index;
 };
 
+struct Vertex
+{
+    Point position;
+    Vec3 texcoord;
+    Direction normal;
+};
+
+struct TriangleData {
+    Vertex v1;
+    Vertex v2;
+    Vertex v3;
+};
 
 class OBJParser
 {

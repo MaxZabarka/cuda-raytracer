@@ -123,29 +123,26 @@ Geometry OBJParser::parse()
             }
 
             vertex_positions.push_back(Point(x, y, z));
-        }
-        else if (line_directive == "vn")
-        {
-            float x = parse_float(line, &line_index);
-            float y = parse_float(line, &line_index);
-            float z = parse_float(line, &line_index);
 
-            vertex_normals.push_back(Direction(x, y, z));
         }
         else if (line_directive == "f")
         {
             VertexIndices vi_1 = parse_vertex_indices(line, &line_index);
             VertexIndices vi_2 = parse_vertex_indices(line, &line_index);
             VertexIndices vi_3 = parse_vertex_indices(line, &line_index);
-            Vertex v1 = Vertex{vertex_positions[vi_1.position_index], vertex_normals[vi_1.normal_index]};
-            Vertex v2 = Vertex{vertex_positions[vi_2.position_index], vertex_normals[vi_2.normal_index]};
-            Vertex v3 = Vertex{vertex_positions[vi_3.position_index], vertex_normals[vi_3.normal_index]};
+            Vertex v1 = Vertex{vertex_positions[vi_1.position_index]};
+            Vertex v2 = Vertex{vertex_positions[vi_2.position_index]};
+            Vertex v3 = Vertex{vertex_positions[vi_3.position_index]};
 
             TriangleData triangle_data = TriangleData{v1, v2, v3};
 
             triangles.push_back(triangle_data);
+
         }
     }
+    return triangles;
+
+
 
     TriangleData* arr_triangles = (TriangleData*)cuda::mallocManaged(triangles.size() * sizeof(TriangleData));
     std::copy(triangles.begin(), triangles.end(), arr_triangles);
@@ -164,6 +161,7 @@ Geometry OBJParser::parse()
     // std:: cout << "Position: " << triangles[0].v2.position.x << ", " << triangles[0].v2.position.y << ", " << triangles[0].v2.position.z << std::endl;
     // std:: cout << "Vertex 3: " << std::endl;
     // std:: cout << "Position: " << triangles[0].v3.position.x << ", " << triangles[0].v3.position.y << ", " << triangles[0].v3.position.z << std::endl;
+<<<<<<< HEAD
 
     // Print the vertex normals of the first triangle
     // std::cout << "Triangle 1: " << std::endl;
@@ -176,4 +174,7 @@ Geometry OBJParser::parse()
     
     
     return geometry;
+=======
+    
+>>>>>>> parent of af5e36a (smooth shading)
 }

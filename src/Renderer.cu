@@ -14,7 +14,7 @@
 
 #include <curand_kernel.h>
 
-#define COLOR_NORMALS true
+#define COLOR_NORMALS false
 
 
 Renderer::Renderer()
@@ -36,7 +36,6 @@ __device__ FloatColor trace_ray(Ray &ray, Camera &camera, Scene *scene, curandSt
         if (closest_hit.hittable)
         {
             Direction normal = closest_hit.normal;
-            normal.z *= -1;
 
             if (COLOR_NORMALS)
             {
