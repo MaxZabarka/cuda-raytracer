@@ -44,6 +44,7 @@ __device__ FloatColor trace_ray(Ray &ray, Camera &camera, Scene *scene, curandSt
             }
             current_attenuation = closest_hit.material.color * current_attenuation;
             Point target = closest_hit.p + random_in_hemisphere(normal, &local_rand_state);
+
             current_ray.origin = closest_hit.p;
             current_ray.direction = target - closest_hit.p;
         }

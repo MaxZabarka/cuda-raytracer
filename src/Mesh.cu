@@ -9,9 +9,7 @@ __host__ Mesh::Mesh(Geometry &geometry, Material material) : geometry{geometry},
     for (size_t i = 0; i < geometry.num_triangles; i++)
     {
         TriangleData data = geometry.triangles[i];
-        triangles[i] = Triangle(data, material);
-        // cuda::fixVirtualPointers << 1, 1 >> (Triangle *)(&triangles[i]);
-        
+        triangles[i] = Triangle(data, Material{FloatColor{0.5f, 0.5f, 0.5f}});
     }
 }
 
@@ -66,13 +64,12 @@ __device__ __host__ Hit Mesh::hit(const Ray &ray)
         t_min = t_min > t1 ? t_min : t1;
         t_max = t_max < t2 ? t_max : t2;
 
-        if (t_min > t_max || t_max < 0.0)
+        if (t_min > t_max)
         {
             return Hit{INFINITY, Vec3(0, 0, 0), nullptr};
         }
     }
 
-    // return Hit{1.0f, Point{0, 0, 0}, this, Point{0, 0, 0}, material};
 
     Hit closest_hit = Hit{INFINITY, Vec3(0, 0, 0), nullptr};
 
@@ -80,8 +77,6 @@ __device__ __host__ Hit Mesh::hit(const Ray &ray)
     {
         Triangle triangle = triangles[i];
         Hit hit = triangle.hit(ray);
-        // printf("%f, %f, %f", hit.material.color.x, hit.material.color.y, hit.material.color.z);
-
         // Fix shadow acne
         if (hit.t < closest_hit.t && hit.t > 0.001)
         {
