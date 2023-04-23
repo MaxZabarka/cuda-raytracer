@@ -5,8 +5,7 @@ OBJECTS := $(patsubst %.cu, %.o, $(OBJECTS))
 
 $(info $(OBJECTS))
 
-CFLAGS= -lSDL2 -lSDL2main --compiler-options -Wall
-# CFLAGS += -g -G -O0
+CFLAGS= -lSDL2 -lSDL2main -g --compiler-options -Wall
 
 raytracer: $(OBJECTS)
 	$(CC)  $(LDFLAGS) $(LIBS) -o raytracer $(OBJECTS) $(CFLAGS)
