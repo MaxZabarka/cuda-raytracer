@@ -8,13 +8,14 @@
 #include "Triangle.cuh"
 #include "OBJParser.cuh"
 #include "Mesh.cuh"
+#include "print_pointer_location.cuh"
 
 int main()
 {
-    // OBJParser obj_parser = OBJParser("monkey.obj");
-    // Geometry geometry = obj_parser.parse();
+    OBJParser obj_parser = OBJParser("monkey.obj");
+    Geometry geometry = obj_parser.parse();
 
-    // Mesh mesh = Mesh(geometry, Material{FloatColor{0.5f, 0.5f, 0.5f}});
+    Mesh mesh = Mesh(geometry, Material{FloatColor{0.5f, 0.5f, 0.5f}});
     // cuda::fixVirtualPointers << 1, 1 >>> (&mesh);
 
     // int image_width = 48;
@@ -30,18 +31,18 @@ int main()
 
     int num_hittables = 1;
     scene->hittable_list.size = num_hittables;
+
     scene->hittable_list.hittables = (Hittable **)cuda::mallocManaged(sizeof(Hittable *) * num_hittables);
+    scene->hittable_list.hittables[0] = (Hittable *)cuda::mallocManaged(sizeof(Mesh));
+    cuda::copyToDevice(scene->hittable_list.hittables[0], &mesh, sizeof(Mesh));
 
-    // scene->hittable_list.hittables[0] = (Hittable *)cuda::mallocManaged(sizeof(Mesh));
-    // cuda::copyToDevice(scene->hittable_list.hittables[0], &mesh, sizeof(Mesh));
-
-    // cuda::fixVirtualPointers<<<1, 1>>>((Mesh *)scene->hittable_list.hittables[0]);
+    cuda::fixVirtualPointers<<<1, 1>>>((Mesh *)scene->hittable_list.hittables[0]);
 
 
-    // printf("%f\n", mesh.geometry.triangles[0].a.position.y);
-    // printf("%f\n", ((Mesh *)scene->hittable_list.hittables[0])->geometry.triangles[0].a.position.y);
+    printf("%f\n", mesh.geometry.triangles[0].a.position.y);
+    printf("%f\n", ((Mesh *)scene->hittable_list.hittables[0])->geometry.triangles[0].a.position.y);
 
-    // print_pointer_location(((Mesh *)scene->hittable_list.hittables[0])->triangles);
+    print_pointer_location(((Mesh *)scene->hittable_list.hittables[0])->triangles);
 
     // for (int i = 0; i < num_hittables; i++)
     // {
@@ -59,11 +60,11 @@ int main()
     // // https://forums.developer.nvidia.com/t/copying-objects-to-device-with-virtual-functions/54927
     // cuda::fixVirtualPointers<<<1, 1>>>((Triangle *)scene->hittable_list.hittables[0]);
 
-    Sphere test_hittable = Sphere(Point{0.0F, 1.0F, 2.0F}, 0.1, Material{FloatColor{1.0f, 0.0f, 0.0f}});
-    scene->hittable_list.hittables[0] = (Hittable *)cuda::mallocManaged(sizeof(Sphere));
-    cuda::copyToDevice(scene->hittable_list.hittables[0], &test_hittable, sizeof(Sphere));
-    // https://forums.developer.nvidia.com/t/copying-objects-to-device-with-virtual-functions/54927
-    cuda::fixVirtualPointers<<<1, 1>>>((Sphere *)scene->hittable_list.hittables[0]);
+    // Sphere test_hittable = Sphere(Point{0.0F, 1.0F, 2.0F}, 0.1, Material{FloatColor{1.0f, 0.0f, 0.0f}});
+    // scene->hittable_list.hittables[0] = (Hittable *)cuda::mallocManaged(sizeof(Sphere));
+    // cuda::copyToDevice(scene->hittable_list.hittables[0], &test_hittable, sizeof(Sphere));
+    // // https://forums.developer.nvidia.com/t/copying-objects-to-device-with-virtual-functions/54927
+    // cuda::fixVirtualPointers<<<1, 1>>>((Sphere *)scene->hittable_list.hittables[0]);
 
     // Sphere test_hittable2 = Sphere(Point{0.0F, 0.0F, 2.0F}, 0.1, Material{FloatColor{0.5f, 0.5f, 0.5f}});
     // scene->hittable_list.hittables[1] = (Hittable *)cuda::mallocManaged(sizeof(Sphere));
