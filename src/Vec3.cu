@@ -64,3 +64,9 @@ __device__ __host__ Vec3 Vec3::cross(const Vec3 &other) const
 {
     return Vec3(y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x);
 }
+
+__device__ __host__ bool Vec3::near_zero() const
+{
+    const float s = 1e-8;
+    return (fabs(x) < s) && (fabs(y) < s) && (fabs(z) < s);
+}

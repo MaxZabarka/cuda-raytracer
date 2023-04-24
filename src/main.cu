@@ -15,8 +15,8 @@ int main()
     OBJParser obj_parser = OBJParser("scene.obj");
     HittableList hittable_list = obj_parser.parse();
 
-    // int image_width = 48;
-    // int image_height = 48;
+    // int image_width = 128;
+    // int image_height = 128;
 
     int image_width = 512;
     int image_height = 288;

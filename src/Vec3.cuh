@@ -26,6 +26,8 @@ public:
     __device__ __host__ Color to_int_color() const;
     __device__ __host__ Vec3 square_root() const;
 
+    __device__ __host__ bool near_zero() const;
+
     float x;
     float y;
     float z;

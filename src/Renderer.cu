@@ -9,13 +9,12 @@
 #include "Hittable.cuh"
 #include "Scene.cuh"
 #include "Vec3.cuh"
-#include "diffuse_formulations.cuh"
 #include "map.cuh"
 #include "Material.cuh"
 
 #include <curand_kernel.h>
 
-#define COLOR_NORMALS true
+#define COLOR_NORMALS false
 
 template <typename T>
 __global__ void fixVirtualPointers(T *other)
@@ -36,8 +35,8 @@ Renderer::~Renderer()
 __device__ FloatColor trace_ray(Ray &ray, Camera &camera, Scene *scene, curandState local_rand_state)
 {
     Ray current_ray = Ray{ray.direction, ray.origin};
-    FloatColor current_attenuation = FloatColor{1.0f, 1.0f, 1.0f};
-    for (int _ = 0; _ < 50; _++)
+    FloatColor attenuation = FloatColor{1.0f, 1.0f, 1.0f};
+    for (int _ = 0; _ < 1; _++)
     {
         Hit closest_hit = scene->hittable_list.hit(current_ray);
 
@@ -47,21 +46,24 @@ __device__ FloatColor trace_ray(Ray &ray, Camera &camera, Scene *scene, curandSt
 
             if (COLOR_NORMALS)
             {
-                // normal.z *= -1;
+                normal.z *= -1;
                 return FloatColor{normal.x + 1, normal.y + 1, normal.z + 1} * 0.5;
             }
-            current_attenuation = closest_hit.material.color * current_attenuation;
-            Point target = closest_hit.p + random_in_hemisphere(normal, &local_rand_state);
+            if(!closest_hit.material.scatter(&current_ray, &closest_hit, &attenuation, local_rand_state)) {
+                return FloatColor{0, 0, 1};
+            }
+            // attenuation = closest_hit.material.color * attenuation;
+            // Point target = closest_hit.p + random_in_hemisphere(normal, &local_rand_state);
 
-            current_ray.origin = closest_hit.p;
-            current_ray.direction = target - closest_hit.p;
+            // current_ray.origin = closest_hit.p;
+            // current_ray.direction = target - closest_hit.p;
         }
         else
         {
             Direction ray_unit_direction = current_ray.direction.normalize();
             float y = 0.5 * (ray_unit_direction.y + 1.0);
             FloatColor background_color = FloatColor(1.0, 1.0, 1.0) * (1.0 - y) + FloatColor(0.5, 0.7, 1.0) * y;
-            return background_color * current_attenuation;
+            return background_color * attenuation;
         }
     }
 

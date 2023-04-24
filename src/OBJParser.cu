@@ -58,8 +58,44 @@ VertexIndices OBJParser::parse_vertex_indices(std::string line, size_t *line_ind
     return vertex_indices;
 }
 
+void OBJParser::parse_materials(std::string file_path)
+{
+    std::ifstream file(file_path);
+    if (!file.is_open())
+    {
+        throw std::runtime_error("Could not open file: " + file_path);
+    }
+
+    std::string line;
+    while (std::getline(file, line)) {
+        if (line[0] == '#') {
+            continue;
+        }
+        std::string line_directive;
+        size_t line_index = 0;
+
+        while (line[line_index] != ' ') {
+            line_directive += line[line_index];
+            line_index++;
+        }
+
+        if (line_directive == "newmtl") {
+            std::string material_name;
+            while (line[line_index] == ' ') {
+                line_index++;
+            }
+            while (line[line_index] != ' ' && line_index < line.size()) {
+                material_name += line[line_index];
+                line_index++;
+            }
+            std::cout << material_name << std::endl;
+        }
+    }
+}
+
 HittableList OBJParser::parse()
 {
+
     std::ifstream file(file_path);
     if (!file.is_open())
     {
@@ -131,7 +167,7 @@ HittableList OBJParser::parse()
             float y = parse_float(line, &line_index);
             float z = parse_float(line, &line_index);
 
-            vertex_normals.push_back(Direction(x, y, z));
+            vertex_normals.push_back(Direction(x, y, z).normalize());
         }
         else if (line_directive == "f")
         {
@@ -143,7 +179,7 @@ HittableList OBJParser::parse()
             Vertex v3 = Vertex{vertex_positions[vi_3.position_index], vertex_normals[vi_3.normal_index]};
 
             TriangleData triangle_data = TriangleData{v1, v2, v3};
-            Triangle triangle = Triangle{triangle_data, Material{FloatColor{0.5, 0.5, 0.5}}};
+            Triangle triangle = Triangle{triangle_data, Material{FloatColor{1.0f, 0.5f, 0.5f}}};
 
             triangles.push_back(triangle);
         }

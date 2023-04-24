@@ -62,7 +62,7 @@ __device__ __host__ Hit Triangle::hit(const Ray &ray)
     float t = edge2.dot(Q) * inv_det;
 
     // If t > 0, the intersection is valid
-    if (t > 0.0)
+    if (t > 0.001)
     {
         result.t = t;
         result.p = ray.origin + ray.direction * t;
@@ -73,6 +73,7 @@ __device__ __host__ Hit Triangle::hit(const Ray &ray)
         // result.normal = edge1.cross(edge2).normalize();
         result.material = material;
     }
+    
 
     return result;
 }
