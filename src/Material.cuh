@@ -1,13 +1,13 @@
 #pragma once
 #include "Vec3.cuh"
+#include "Ray.cuh"
 
-// class Material
-// {
-// public:
-//     virtual bool scatter(const Ray &r_in, const Hit &hit, Vec3 &attenuation, Ray &scattered) const = 0;
-// };
-
-struct Material
+class Material
 {
-    FloatColor color;
+private:
+public:
+    __device__ __host__ Material(FloatColor color = FloatColor(0.5f, 0.5f, 0.5f));
+    __device__ __host__ ~Material();
+    __device__ __host__ Ray scatter(Ray &r_in);
+    FloatColor color = FloatColor(0.5f, 0.5f, 0.5f);
 };

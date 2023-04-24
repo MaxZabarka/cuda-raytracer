@@ -14,7 +14,7 @@ __device__ __host__ Hit BoundingBox::hit(const Ray &ray)
 {
 
 
-    float t_min = -INFINITY;
+    float t_min = 0;
     float t_max = INFINITY;
 
     // For each dimension (x, y, z)

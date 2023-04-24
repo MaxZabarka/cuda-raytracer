@@ -3,7 +3,8 @@
 #include <iostream>
 #include "Vec3.cuh"
 #include <vector>
-#include "cuda.cuh"
+#include "cuda-wrapper/cuda.cuh"
+#include "BoundingBox.cuh"
 
 OBJParser::OBJParser(
     std::string file_path)
@@ -70,6 +71,9 @@ HittableList OBJParser::parse()
     std::vector<Direction> vertex_normals;
     std::vector<Vec3> vertex_texture_coords;
 
+    Point min_bounds = Point{INFINITY, INFINITY, INFINITY};
+    Point max_bounds = Point{-INFINITY, -INFINITY, -INFINITY};
+
     std::string line;
     while (std::getline(file, line))
     {
@@ -94,6 +98,32 @@ HittableList OBJParser::parse()
             float z = parse_float(line, &line_index);
 
             vertex_positions.push_back(Point(x, y, z));
+
+            if (x > max_bounds.x)
+            {
+                max_bounds.x = x;
+            }
+            if (y > max_bounds.y)
+            {
+                max_bounds.y = y;
+            }
+            if (z > max_bounds.z)
+            {
+                max_bounds.z = z;
+            }
+
+            if (x < min_bounds.x)
+            {
+                min_bounds.x = x;
+            }
+            if (y < min_bounds.y)
+            {
+                min_bounds.y = y;
+            }
+            if (z < min_bounds.z)
+            {
+                min_bounds.z = z;
+            }
         }
         else if (line_directive == "vn")
         {
@@ -118,8 +148,31 @@ HittableList OBJParser::parse()
             triangles.push_back(triangle);
         }
     }
-    Hittable** hittables = cuda::malloc
-    HittableList hittable_list = HittableList{triangles};
 
-    return triangles;
+    Hittable **triangle_hittables = (Hittable **)cuda::mallocManaged(sizeof(Hittable *) * triangles.size());
+    HittableList triangle_hittable_list = HittableList{triangle_hittables, triangles.size()};
+    for (int i = 0; i < triangles.size(); i++)
+    {
+        triangle_hittables[i] = (Hittable *)cuda::mallocManaged(sizeof(Triangle));
+        cuda::copyToDevice(triangle_hittables[i], &triangles[i], sizeof(Triangle));
+        cuda::fixVirtualPointers<<<1, 1>>>((Triangle *)triangle_hittables[i]);
+    }
+
+    // print min bounds
+    std::cout << "min bounds: " << min_bounds.x << ", " << min_bounds.y << ", " << min_bounds.z << std::endl;
+
+    // print max bounds
+    std::cout << "max bounds: " << max_bounds.x << ", " << max_bounds.y << ", " << max_bounds.z << std::endl;
+
+    Hittable **hittables = (Hittable **)cuda::mallocManaged(sizeof(Hittable *) * 1);
+    HittableList hittable_list = HittableList{hittables, 1};
+    BoundingBox bounding_box = BoundingBox{triangle_hittable_list, min_bounds, max_bounds};
+
+    hittables[0] = (Hittable *)cuda::mallocManaged(sizeof(BoundingBox));
+    cuda::copyToDevice(hittables[0], &bounding_box, sizeof(BoundingBox));
+    cuda::fixVirtualPointers<<<1, 1>>>((BoundingBox *)hittables[0]);
+
+    // hittables[0] = bounding_box
+
+    return hittable_list;
 }

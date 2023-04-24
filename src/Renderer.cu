@@ -11,10 +11,11 @@
 #include "Vec3.cuh"
 #include "diffuse_formulations.cuh"
 #include "map.cuh"
+#include "Material.cuh"
 
 #include <curand_kernel.h>
 
-#define COLOR_NORMALS false
+#define COLOR_NORMALS true
 
 template <typename T>
 __global__ void fixVirtualPointers(T *other)
@@ -39,14 +40,14 @@ __device__ FloatColor trace_ray(Ray &ray, Camera &camera, Scene *scene, curandSt
     for (int _ = 0; _ < 50; _++)
     {
         Hit closest_hit = scene->hittable_list.hit(current_ray);
-        
+
         if (closest_hit.hittable)
         {
             Direction normal = closest_hit.normal;
-            normal.z *= -1;
 
             if (COLOR_NORMALS)
             {
+                // normal.z *= -1;
                 return FloatColor{normal.x + 1, normal.y + 1, normal.z + 1} * 0.5;
             }
             current_attenuation = closest_hit.material.color * current_attenuation;

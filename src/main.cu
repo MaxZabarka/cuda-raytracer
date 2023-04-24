@@ -12,8 +12,8 @@
 
 int main()
 {
-    OBJParser obj_parser = OBJParser("monkey.obj");
-    std::vector<TriangleData> triangle_data = obj_parser.parse();
+    OBJParser obj_parser = OBJParser("scene.obj");
+    HittableList hittable_list = obj_parser.parse();
 
     // int image_width = 48;
     // int image_height = 48;
@@ -25,28 +25,36 @@ int main()
 
     Scene *scene;
     cudaMallocManaged(&scene, sizeof(Scene));
-    scene->hittable_list.size = 1;
-    scene->hittable_list.hittables = (Hittable **)cuda::mallocManaged(sizeof(Hittable *) * scene->hittable_list.size);
 
-    Hittable **hittables = (Hittable **)cuda::mallocManaged(sizeof(Hittable *) * triangle_data.size());
-    HittableList box_hittable_list = HittableList(hittables, triangle_data.size());
-    BoundingBox bounding_box = BoundingBox(box_hittable_list, Point{-0.3f, -0.3f, -0.3f}, Point{0.3f, 0.3f, 0.3f});
+    scene->hittable_list = hittable_list;
 
-    // scene->hittable_list.hittables = (Hittable **)cuda::mallocManaged(sizeof(Hittable *) * num_hittables);
 
-    for (size_t i = 0; i < triangle_data.size(); i++)
-    {
-        TriangleData data = triangle_data[i];
-        Triangle triangle = Triangle(data, Material{FloatColor{0.5f, 0.5f, 0.5f}});
-        bounding_box.hittable_list.hittables[i] = (Hittable *)cuda::mallocManaged(sizeof(Triangle));
-        cuda::copyToDevice(bounding_box.hittable_list.hittables[i], &triangle, sizeof(Triangle));
-        cuda::fixVirtualPointers<<<1, 1>>>((Triangle *)bounding_box.hittable_list.hittables[i]);
-        // printf("Triangle: %f, %f, %f\n", data.a.position.x, data.b.position.y, data.c.position.z);
-    }
+    // scene->hittable_list.size = 1;
+    // scene->hittable_list.hittables = (Hittable **)cuda::mallocManaged(sizeof(Hittable *) * scene->hittable_list.size);
 
-    scene->hittable_list.hittables[0] = (Hittable *)cuda::mallocManaged(sizeof(BoundingBox));
-    cuda::copyToDevice(scene->hittable_list.hittables[0], &bounding_box, sizeof(BoundingBox));
-    cuda::fixVirtualPointers<<<1, 1>>>((BoundingBox *)scene->hittable_list.hittables[0]);
+    // Hittable **hittables = (Hittable **)cuda::mallocManaged(sizeof(Hittable *) * triangle_data.size());
+    // HittableList box_hittable_list = HittableList(hittables, triangle_data.size());
+    // BoundingBox bounding_box = BoundingBox(box_hittable_list, Point{-0.3f, -0.3f, -0.3f}, Point{0.3f, 0.3f, 0.3f});
+
+    // // scene->hittable_list.hittables = (Hittable **)cuda::mallocManaged(sizeof(Hittable *) * num_hittables);
+
+    // for (size_t i = 0; i < triangle_data.size(); i++)
+    // {
+    //     TriangleData data = triangle_data[i];
+    //     Triangle triangle = Triangle(data, Material{FloatColor{0.5f, 0.5f, 0.5f}});
+    //     bounding_box.hittable_list.hittables[i] = (Hittable *)cuda::mallocManaged(sizeof(Triangle));
+    //     cuda::copyToDevice(bounding_box.hittable_list.hittables[i], &triangle, sizeof(Triangle));
+    //     cuda::fixVirtualPointers<<<1, 1>>>((Triangle *)bounding_box.hittable_list.hittables[i]);
+    //     // printf("Triangle: %f, %f, %f\n", data.a.position.x, data.b.position.y, data.c.position.z);
+    // }
+
+    // scene->hittable_list.hittables[0] = (Hittable *)cuda::mallocManaged(sizeof(BoundingBox));
+    // cuda::copyToDevice(scene->hittable_list.hittables[0], &bounding_box, sizeof(BoundingBox));
+    // cuda::fixVirtualPointers<<<1, 1>>>((BoundingBox *)scene->hittable_list.hittables[0]);
+
+
+
+
 
     // Triangle test_hittable = Triangle(Point{1.0F, 0.0F, 5.0F}, Point{0.0F, 0.0F, 5.0F}, Point{0.0F, 1.0F, 5.0F}, Material{FloatColor{0.5f, 0.5f, 0.5f}});
     // scene->hittable_list.hittables[0] = (Hittable *)cuda::mallocManaged(sizeof(Triangle));
@@ -75,7 +83,7 @@ int main()
     // cuda::copyToDevice(scene->hittable_list.hittables[3], &test_hittable4, sizeof(Triangle));
     // cuda::fixVirtualPointers<<<1, 1>>>((Triangle *)scene->hittable_list.hittables[3]);
 
-    Camera camera{image_width, image_height, Point(0.0f, 0.0f, 0.0f)};
+    Camera camera{image_width, image_height, Point(0.0f, 1.0f, -7.0f), INFINITY, 30.0f};
     scene->camera = camera;
 
     window.draw_scene(scene);

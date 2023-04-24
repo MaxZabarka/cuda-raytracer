@@ -82,7 +82,7 @@ void Window::draw_scene(Scene* scene)
             rerender = false;
         }
 
-        float move_speed = 0.00001f * dt;
+        float move_speed = 0.000003f * dt;
 
         if (keyboard_state[SDL_SCANCODE_W])
         {
