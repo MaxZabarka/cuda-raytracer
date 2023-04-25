@@ -3,6 +3,7 @@
 #include "Infinity.cuh"
 #include <cmath>
 #include <iostream>
+#include <stdio.h>
 
 __device__ __host__ Triangle::Triangle(TriangleData triangle_data, Material material) : triangle_data{triangle_data}, material{material}
 {
@@ -16,7 +17,7 @@ __device__ __host__ Hit Triangle::hit(const Ray &ray)
 {
 
     Hit result{INFINITY, Vec3{}, nullptr, Vec3{}, material};
-    
+
     // Edge vectors
     Vec3 edge1 = triangle_data.b.position - triangle_data.a.position;
     Vec3 edge2 = triangle_data.c.position - triangle_data.a.position;
@@ -65,7 +66,20 @@ __device__ __host__ Hit Triangle::hit(const Ray &ray)
         result.hittable = (void *)this;
         float w = 1.0 - u - v;
 
+        // print texcoords
+
+        // printf("%f %f\n", triangle_data.a.texcoord.u, triangle_data.a.texcoord.v);
+
         result.normal = (triangle_data.a.normal * w + triangle_data.b.normal * u + triangle_data.c.normal * v).normalize();
+
+        result.texcoord = Vec2{triangle_data.a.texcoord.u * w + triangle_data.b.texcoord.u * u + triangle_data.c.texcoord.u * v,
+                               triangle_data.a.texcoord.v * w + triangle_data.b.texcoord.v * u + triangle_data.c.texcoord.v * v};
+
+        // print result
+
+        // printf("%f %f\n", result.texcoord.u, result.texcoord.v);
+        
+
         // result.normal = edge1.cross(edge2).normalize();
         result.material = material;
     }

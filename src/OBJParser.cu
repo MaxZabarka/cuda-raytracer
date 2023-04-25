@@ -95,8 +95,7 @@ void OBJParser::parse_materials(std::string file_path)
             float y = parse_float(line, &line_index);
             float z = parse_float(line, &line_index);
 
-
-            ColorTexture *texture = (ColorTexture*)cuda::mallocManaged(sizeof(ColorTexture));
+            ColorTexture *texture = (ColorTexture *)cuda::mallocManaged(sizeof(ColorTexture));
             texture->color = FloatColor(x, y, z);
             cuda::fixVirtualPointers<<<1, 1>>>(texture);
             materials[current_material].color = texture;
@@ -147,7 +146,7 @@ HittableList OBJParser::parse()
     std::vector<Triangle> triangles;
     std::vector<Point> vertex_positions;
     std::vector<Direction> vertex_normals;
-    std::vector<Vec3> vertex_texture_coords;
+    std::vector<Vec2> vertex_texture_coords;
 
     Point min_bounds = Point{INFINITY, INFINITY, INFINITY};
     Point max_bounds = Point{-INFINITY, -INFINITY, -INFINITY};
@@ -226,14 +225,21 @@ HittableList OBJParser::parse()
 
             vertex_normals.push_back(Direction(x, y, z).normalize());
         }
+        else if (line_directive == "vt")
+        {
+            float u = parse_float(line, &line_index);
+            float v = parse_float(line, &line_index);
+
+            vertex_texture_coords.push_back(Vec2(u, v));
+        }
         else if (line_directive == "f")
         {
             VertexIndices vi_1 = parse_vertex_indices(line, &line_index);
             VertexIndices vi_2 = parse_vertex_indices(line, &line_index);
             VertexIndices vi_3 = parse_vertex_indices(line, &line_index);
-            Vertex v1 = Vertex{vertex_positions[vi_1.position_index], vertex_normals[vi_1.normal_index]};
-            Vertex v2 = Vertex{vertex_positions[vi_2.position_index], vertex_normals[vi_2.normal_index]};
-            Vertex v3 = Vertex{vertex_positions[vi_3.position_index], vertex_normals[vi_3.normal_index]};
+            Vertex v1 = Vertex{vertex_positions[vi_1.position_index], vertex_normals[vi_1.normal_index], vertex_texture_coords[vi_1.texturecoord_index]};
+            Vertex v2 = Vertex{vertex_positions[vi_2.position_index], vertex_normals[vi_2.normal_index], vertex_texture_coords[vi_2.texturecoord_index]};
+            Vertex v3 = Vertex{vertex_positions[vi_3.position_index], vertex_normals[vi_3.normal_index], vertex_texture_coords[vi_3.texturecoord_index]};
 
             TriangleData triangle_data = TriangleData{v1, v2, v3};
             // std::cout << "Material: " << current_material << std::endl;
@@ -242,6 +248,13 @@ HittableList OBJParser::parse()
             triangles.push_back(triangle);
         }
     }
+
+
+    for (auto const &texture_coord : vertex_texture_coords)
+    {
+        std::cout << "texture coord: " << texture_coord.u << ", " << texture_coord.v << std::endl;
+    }
+
 
     Hittable **triangle_hittables = (Hittable **)cuda::mallocManaged(sizeof(Hittable *) * triangles.size());
     HittableList triangle_hittable_list = HittableList{triangle_hittables, triangles.size()};

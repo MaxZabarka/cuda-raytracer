@@ -11,4 +11,5 @@ struct Hit
     void *hittable;
     Vec3 normal;
     Material material ;
+    Vec2 texcoord;
 };

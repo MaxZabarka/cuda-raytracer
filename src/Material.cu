@@ -19,9 +19,9 @@ __device__ __host__ Material::Material(Texture *color) : color{color}
 __device__ __host__ Material::Material()
 {
 
-    // this->color = (ColorTexture *)cuda::mallocManaged(sizeof(ColorTexture));
-    // ((ColorTexture *)this->color)->color = FloatColor(0.5f, 0.5f, 0.5f);
-    // cuda::fixVirtualPointers<<<1, 1>>>((ColorTexture *)(color));
+    this->color = (ColorTexture *)cuda::mallocManaged(sizeof(ColorTexture));
+    ((ColorTexture *)this->color)->color = FloatColor(0.5f, 0.5f, 0.5f);
+    cuda::fixVirtualPointers<<<1, 1>>>((ColorTexture *)(color));
 }
 
 __device__ __host__ Material::~Material()
@@ -40,7 +40,7 @@ __device__ Direction reflect(Direction normal, Direction incident)
 
 __device__ bool Material::scatter(Ray *ray, Hit *hit, FloatColor *attenuation, curandState &local_rand_state)
 {
-    *attenuation = color->get_color(Vec2{}) * *attenuation;
+    *attenuation = color->get_color(hit->texcoord) * *attenuation;
 
     // Direction reflected = reflect(hit->normal, ray->direction);
     // Point target = hit->p + random_in_hemisphere(hit->normal, &local_rand_state);

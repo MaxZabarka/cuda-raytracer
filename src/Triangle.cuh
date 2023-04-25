@@ -8,7 +8,7 @@ struct Vertex
 {
     Point position;
     Direction normal;
-    Vec3 texcoord;
+    Vec2 texcoord;
 
 };
 struct TriangleData
