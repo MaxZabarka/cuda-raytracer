@@ -12,7 +12,7 @@
 
 int main()
 {
-    OBJParser obj_parser = OBJParser("models/materials");
+    OBJParser obj_parser = OBJParser("models/texture");
     HittableList hittable_list = obj_parser.parse();
 
     // int image_width = 128;

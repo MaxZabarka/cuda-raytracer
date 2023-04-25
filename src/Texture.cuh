@@ -2,6 +2,11 @@
 #include "Vec2.cuh"
 #include "Vec3.cuh"
 
+struct ImageData {
+    int width;
+    int height;
+    FloatColor* data;
+};
 class Texture
 {
 protected:

@@ -28,4 +28,5 @@ public:
 
     std::unordered_map<std::string, Material> materials;
     Material safe_get_material(std::string name);
+    ImageData load_image(std::string image_path);
 };

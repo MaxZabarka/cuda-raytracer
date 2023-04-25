@@ -10,6 +10,7 @@
 #include "Sphere.cuh"
 #include "Scene.cuh"
 #include "Camera.cuh"
+#include <SDL2/SDL_image.h>
 
 Window::Window(int image_width, int image_height, int window_width, int window_height) : image_width{image_width}, image_height{image_height}
 {
@@ -21,14 +22,20 @@ Window::Window(int image_width, int image_height, int window_width, int window_h
     SDL_Init(SDL_INIT_VIDEO);
     SDL_CreateWindowAndRenderer(window_width, window_height, 0, &window, &renderer);
     SDL_RenderSetLogicalSize(renderer, image_width, image_height);
+
+    // Initialize SDL_image
+    int img_flags = IMG_INIT_PNG;
+    if (!(IMG_Init(img_flags) & img_flags))
+    {
+        throw std::runtime_error("SDL_image could not initialize! SDL_image Error: " + std::string(IMG_GetError()));
+    }
 }
 
 Window::~Window()
 {
 }
 
-
-void Window::draw_scene(Scene* scene)
+void Window::draw_scene(Scene *scene)
 {
     // Setup renderer
     Renderer gpuRenderer{};
@@ -41,7 +48,6 @@ void Window::draw_scene(Scene* scene)
                                             SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING,
                                             image_width, image_height);
 
-  
     clock_t lastTick = clock();
     clock_t dt = 0;
 
@@ -52,8 +58,6 @@ void Window::draw_scene(Scene* scene)
     bool quit = false;
     uint32_t current_sample = 0;
     uint32_t max_samples = 4000;
-    
-
 
     while (!quit)
     {
