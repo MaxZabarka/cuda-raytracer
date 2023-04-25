@@ -14,7 +14,7 @@ __device__ __host__ Sphere::~Sphere()
 
 __device__ __host__ Hit Sphere::hit(const Ray &ray)
 {
-    Hit hit{INFINITY, Vec3{}, this};
+    Hit hit{INFINITY, Vec3{}, this, Vec3{}, Material{nullptr}};
 
     // CO = O - C
     Vec3 sphere_direction = ray.origin - position;

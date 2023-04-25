@@ -10,7 +10,7 @@ __device__ __host__ HittableList::~HittableList()
 
 __device__ __host__ Hit HittableList::hit(const Ray &ray)
 {
-    Hit closest_hit = Hit{INFINITY, Vec3(0, 0, 0), nullptr};
+    Hit closest_hit = Hit{INFINITY, Vec3{}, nullptr, Vec3{},  Material(nullptr)};
 
     for (int i = 0; i < size; i++)
     {

@@ -4,7 +4,6 @@
 #include <cmath>
 #include <iostream>
 
-
 __device__ __host__ Triangle::Triangle(TriangleData triangle_data, Material material) : triangle_data{triangle_data}, material{material}
 {
 }
@@ -16,11 +15,8 @@ __device__ __host__ Triangle::~Triangle()
 __device__ __host__ Hit Triangle::hit(const Ray &ray)
 {
 
-
-    Hit result;
-    result.t = INFINITY;
-    result.hittable = nullptr;
-
+    Hit result{INFINITY, Vec3{}, nullptr, Vec3{}, material};
+    
     // Edge vectors
     Vec3 edge1 = triangle_data.b.position - triangle_data.a.position;
     Vec3 edge2 = triangle_data.c.position - triangle_data.a.position;
@@ -73,7 +69,6 @@ __device__ __host__ Hit Triangle::hit(const Ray &ray)
         // result.normal = edge1.cross(edge2).normalize();
         result.material = material;
     }
-    
 
     return result;
 }

@@ -36,7 +36,7 @@ __device__ FloatColor trace_ray(Ray &ray, Camera &camera, Scene *scene, curandSt
 {
     Ray current_ray = Ray{ray.direction, ray.origin};
     FloatColor attenuation = FloatColor{1.0f, 1.0f, 1.0f};
-    for (int _ = 0; _ < 1; _++)
+    for (int _ = 0; _ < 50; _++)
     {
         Hit closest_hit = scene->hittable_list.hit(current_ray);
 

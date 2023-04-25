@@ -2,10 +2,26 @@
 #include "Hit.cuh"
 #include "diffuse_formulations.cuh"
 #include <curand_kernel.h>
+#include "cuda-wrapper/cuda.cuh"
 
-__device__ __host__ Material::Material(FloatColor color) : color{color}
+__device__ __host__ Material::Material(Texture *color) : color{color}
 
 {
+    if (color == nullptr)
+    {
+
+        this->color = (ColorTexture *)cuda::mallocManaged(sizeof(ColorTexture));
+        ((ColorTexture *)this->color)->color = FloatColor(0.5f, 0.5f, 0.5f);
+        cuda::fixVirtualPointers<<<1, 1>>>((ColorTexture *)(color));
+    }
+}
+
+__device__ __host__ Material::Material()
+{
+
+    // this->color = (ColorTexture *)cuda::mallocManaged(sizeof(ColorTexture));
+    // ((ColorTexture *)this->color)->color = FloatColor(0.5f, 0.5f, 0.5f);
+    // cuda::fixVirtualPointers<<<1, 1>>>((ColorTexture *)(color));
 }
 
 __device__ __host__ Material::~Material()
@@ -24,13 +40,18 @@ __device__ Direction reflect(Direction normal, Direction incident)
 
 __device__ bool Material::scatter(Ray *ray, Hit *hit, FloatColor *attenuation, curandState &local_rand_state)
 {
-    *attenuation = hit->material.color * *attenuation;
+    *attenuation = color->get_color(Vec2{}) * *attenuation;
 
+    // Direction reflected = reflect(hit->normal, ray->direction);
+    // Point target = hit->p + random_in_hemisphere(hit->normal, &local_rand_state);
+    float glossy = 0;
+    Point target = hit->p + (hit->normal * glossy) + (random_in_hemisphere(hit->normal, &local_rand_state) * (1 - glossy));
+
+    // ray->direction = reflected;
     ray->origin = hit->p;
-
-    Direction reflected = reflect(hit->normal, ray->direction);
-    ray->direction = reflected;
-    return (reflected.dot(hit->normal) > 0); // Highlight artifact
+    ray->direction = target - hit->p;
+    return true;
+    // return (reflected.dot(hit->normal) > 0); // Highlight artifact
 }
 
 // float fuzz = 0.5;

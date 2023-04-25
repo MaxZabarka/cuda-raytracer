@@ -60,7 +60,7 @@ __device__ __host__ Hit BoundingBox::hit(const Ray &ray)
 
         if (t_min > t_max)
         {
-            return Hit{INFINITY, Vec3(0, 0, 0), nullptr};
+            return Hit{INFINITY, Vec3(0, 0, 0), nullptr, Vec3{}, Material{nullptr}};
         }
     }
     // return Hit{1, Vec3(1, 1, 1), this, Vec3(0, 0, 0), Material{FloatColor{1, 0, 0}}};

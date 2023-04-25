@@ -12,7 +12,7 @@
 
 int main()
 {
-    OBJParser obj_parser = OBJParser("scene.obj");
+    OBJParser obj_parser = OBJParser("materials");
     HittableList hittable_list = obj_parser.parse();
 
     // int image_width = 128;
@@ -27,7 +27,7 @@ int main()
     cudaMallocManaged(&scene, sizeof(Scene));
 
     scene->hittable_list = hittable_list;
-
+    
 
     // scene->hittable_list.size = 1;
     // scene->hittable_list.hittables = (Hittable **)cuda::mallocManaged(sizeof(Hittable *) * scene->hittable_list.size);

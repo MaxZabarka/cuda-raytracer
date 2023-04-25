@@ -10,5 +10,5 @@ struct Hit
     Vec3 p; // point of intersection
     void *hittable;
     Vec3 normal;
-    Material material;
+    Material material ;
 };

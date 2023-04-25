@@ -5,6 +5,8 @@
 #include <vector>
 #include "cuda-wrapper/cuda.cuh"
 #include "BoundingBox.cuh"
+#include "ColorTexture.cuh"
+#include "Material.cuh"
 
 OBJParser::OBJParser(
     std::string file_path)
@@ -67,36 +69,76 @@ void OBJParser::parse_materials(std::string file_path)
     }
 
     std::string line;
-    while (std::getline(file, line)) {
-        if (line[0] == '#') {
+    std::string current_material = "";
+
+    while (std::getline(file, line))
+    {
+        if (line[0] == '#')
+        {
             continue;
         }
         std::string line_directive;
         size_t line_index = 0;
 
-        while (line[line_index] != ' ') {
+        while (line[line_index] != ' ')
+        {
             line_directive += line[line_index];
             line_index++;
         }
 
-        if (line_directive == "newmtl") {
-            std::string material_name;
-            while (line[line_index] == ' ') {
+        if (line_directive == "Kd")
+        {
+            std::cout << "Kd" << std::endl;
+            std::cout << "material: " << current_material << std::endl;
+
+            float x = parse_float(line, &line_index);
+            float y = parse_float(line, &line_index);
+            float z = parse_float(line, &line_index);
+
+
+            ColorTexture *texture = (ColorTexture*)cuda::mallocManaged(sizeof(ColorTexture));
+            texture->color = FloatColor(x, y, z);
+            cuda::fixVirtualPointers<<<1, 1>>>(texture);
+            materials[current_material].color = texture;
+        }
+
+        if (line_directive == "newmtl")
+        {
+            current_material = "";
+            while (line[line_index] == ' ')
+            {
                 line_index++;
             }
-            while (line[line_index] != ' ' && line_index < line.size()) {
-                material_name += line[line_index];
+            while (line[line_index] != ' ' && line_index < line.size())
+            {
+                current_material += line[line_index];
                 line_index++;
             }
-            std::cout << material_name << std::endl;
         }
     }
+    // // print materials
+
+    // for (auto const &material : materials)
+    // {
+    //     std::cout << "material: " << material.first << std::endl;
+    //     std::cout << "color: " << material.second.color.x << std::endl;
+    // }
+}
+
+Material OBJParser::safe_get_material(std::string material_name)
+{
+    if (materials.find(material_name) == materials.end())
+    {
+        return Material();
+    }
+    return materials[material_name];
 }
 
 HittableList OBJParser::parse()
 {
+    parse_materials(file_path + ".mtl");
 
-    std::ifstream file(file_path);
+    std::ifstream file(file_path + ".obj");
     if (!file.is_open())
     {
         throw std::runtime_error("Could not open file: " + file_path);
@@ -111,6 +153,8 @@ HittableList OBJParser::parse()
     Point max_bounds = Point{-INFINITY, -INFINITY, -INFINITY};
 
     std::string line;
+    std::string current_material;
+
     while (std::getline(file, line))
     {
 
@@ -125,6 +169,19 @@ HittableList OBJParser::parse()
         {
             line_directive += line[line_index];
             line_index++;
+        }
+        if (line_directive == "usemtl")
+        {
+            current_material = "";
+            while (line[line_index] == ' ')
+            {
+                line_index++;
+            }
+            while (line[line_index] != ' ' && line_index < line.size())
+            {
+                current_material += line[line_index];
+                line_index++;
+            }
         }
 
         if (line_directive == "v")
@@ -179,7 +236,8 @@ HittableList OBJParser::parse()
             Vertex v3 = Vertex{vertex_positions[vi_3.position_index], vertex_normals[vi_3.normal_index]};
 
             TriangleData triangle_data = TriangleData{v1, v2, v3};
-            Triangle triangle = Triangle{triangle_data, Material{FloatColor{1.0f, 0.5f, 0.5f}}};
+            // std::cout << "Material: " << current_material << std::endl;
+            Triangle triangle = Triangle{triangle_data, safe_get_material(current_material)};
 
             triangles.push_back(triangle);
         }
@@ -193,12 +251,6 @@ HittableList OBJParser::parse()
         cuda::copyToDevice(triangle_hittables[i], &triangles[i], sizeof(Triangle));
         cuda::fixVirtualPointers<<<1, 1>>>((Triangle *)triangle_hittables[i]);
     }
-
-    // print min bounds
-    std::cout << "min bounds: " << min_bounds.x << ", " << min_bounds.y << ", " << min_bounds.z << std::endl;
-
-    // print max bounds
-    std::cout << "max bounds: " << max_bounds.x << ", " << max_bounds.y << ", " << max_bounds.z << std::endl;
 
     Hittable **hittables = (Hittable **)cuda::mallocManaged(sizeof(Hittable *) * 1);
     HittableList hittable_list = HittableList{hittables, 1};

@@ -22,7 +22,7 @@ class Triangle : public Hittable
 {
 private:
 public:
-    __device__ __host__ Triangle(TriangleData triangle_data, Material material = Material{FloatColor{0.5f, 0.5f, 0.5f}});
+    __device__ __host__ Triangle(TriangleData triangle_data, Material material);
     __device__ __host__ ~Triangle();
     __device__ __host__ virtual Hit hit(const Ray &ray) override;
     TriangleData triangle_data;
