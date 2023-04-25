@@ -49,6 +49,7 @@ __device__ FloatColor trace_ray(Ray &ray, Camera &camera, Scene *scene, curandSt
                 normal.z *= -1;
                 return FloatColor{normal.x + 1, normal.y + 1, normal.z + 1} * 0.5;
             }
+            // printf("%f, %f\n", closest_hit.texcoord.u, closest_hit.texcoord.v);
             if(!closest_hit.material.scatter(&current_ray, &closest_hit, &attenuation, local_rand_state)) {
                 return FloatColor{0, 0, 1};
             }

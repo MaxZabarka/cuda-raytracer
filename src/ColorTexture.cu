@@ -11,7 +11,8 @@ __device__ __host__ ColorTexture::~ColorTexture()
 
 __device__ __host__ FloatColor ColorTexture::get_color(Vec2 coordinate)
 {
-    // printf("coordinates %f %f\n", coordinate.u, coordinate.v);
+
+    // printf("coordinates %f %f\n", coordinate.u, coo10rdinate.v);
     float scale = 10.0f;
     int ix = static_cast<int>(floor(coordinate.u * scale));
     int iy = static_cast<int>(floor(coordinate.v * scale));

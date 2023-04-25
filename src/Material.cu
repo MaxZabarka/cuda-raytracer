@@ -40,6 +40,7 @@ __device__ Direction reflect(Direction normal, Direction incident)
 
 __device__ bool Material::scatter(Ray *ray, Hit *hit, FloatColor *attenuation, curandState &local_rand_state)
 {
+
     *attenuation = color->get_color(hit->texcoord) * *attenuation;
 
     // Direction reflected = reflect(hit->normal, ray->direction);

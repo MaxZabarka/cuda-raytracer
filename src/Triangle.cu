@@ -77,7 +77,6 @@ __device__ __host__ Hit Triangle::hit(const Ray &ray)
 
         // print result
 
-        // printf("%f %f\n", result.texcoord.u, result.texcoord.v);
         
 
         // result.normal = edge1.cross(edge2).normalize();
