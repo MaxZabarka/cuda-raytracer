@@ -181,6 +181,19 @@ void OBJParser::parse_materials(std::string file_path)
             materials[current_material].color = texture;
         }
 
+        if (line_directive == "map_Bump") {
+            while (line[line_index] == ' ')
+            {
+                line_index++;
+            }
+            ImageData image_data = load_image(folder_path.string() + line.substr(line_index, line.size() - line_index));
+            ImageTexture *texture = (ImageTexture *)cuda::mallocManaged(sizeof(ImageTexture));
+            texture->image_data = image_data;
+            cuda::fixVirtualPointers<<<1, 1>>>(texture);
+            materials[current_material].normal = texture;
+
+        }
+
         if (line_directive == "newmtl")
         {
             current_material = "";

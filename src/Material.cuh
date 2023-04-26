@@ -14,4 +14,5 @@ public:
     __device__ __host__ ~Material();
     __device__ bool scatter(Ray *ray, Hit *hit, FloatColor *attenuation, curandState &local_rand_state);
     Texture* color;
+    Texture* normal;
 };
